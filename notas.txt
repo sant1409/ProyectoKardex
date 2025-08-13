@@ -1,0 +1,8 @@
+npm install --save-dev sequelize-cli  : crea migraciones
+npm install sequelize
+npx sequelize-cli init
+npx sequelize-cli db:create
+npx sequelize-cli migration:generate --name create-clientes
+npx sequelize-cli db:migrate
+npx sequelize-cli migration:generate --name create-vehiculos
+npx sequelize-cli migration:generate --name create-recordatorios
