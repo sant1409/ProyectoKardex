@@ -22,6 +22,7 @@ npm install express-session = Permite manejar sesiones de usuarios en el backend
 npm install mysql2 = Es el conector de Node.js para MYSQL, permitiendo hacer consultas mysql desde mi codigo
 npm install sequelize = Es una ORM , que permite interactuar con la base de datos. Ej: crear migraciones
 npm install --save-dev sequelize-cli = Es la herramienta de línea de comandos para trabajar con Sequelize.
+npm install nodemailer  permite enviar codigos de verificacion al registrarse
 ___________________
 Crear migraciones a la base de datos desde el backend
 npx sequelize-cli migration:generate --name create-nombre_entidad
@@ -43,3 +44,12 @@ npm install react-dom
 
 ```
 ## Pasos para migrar el proyecto para un repositorio en git hub
+```
+git init
+Crear el .gitignore
+git add .
+git commit -m "Lo que quiera poner"
+git remote add origin https://github.com/sant1409/ProyectoKardex   a ca se pone la ruta del proyecto
+git push -u origin master      si utiliza main se remplaza por master
+ 
+```

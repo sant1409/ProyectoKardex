@@ -19,24 +19,60 @@ router.post('/registrarse', async (req, res) => {
         return res.status(400).json({error: 'La contraseña debe tener almenos 6 caracteres'});
     }
 
+    if (!correo || !nombre || !contraseña) return res.status(400).json({error: 'Datos incompletos'});
+
     try {
         const contraseñaEncriptada = await bcrypt.hash(contraseña, 10);
 
         const [result] = await pool.query(
-            'INSERT INTO usuarios (correo, nombre, contraseña) VALUES (?, ?, ?)',
-            [correo, nombre, contraseñaEncriptada]
-
+            'INSERT INTO usuarios (correo, nombre, contraseña, verificado) VALUES (?, ?, ?, ?)',
+            [correo, nombre, contraseñaEncriptada, 0] // 0 = no verificado
 
         );
-        res.status(201).json({ message: 'Usuario registrado exitosamente!', id_usuario: result.insertId });
+        //Crear un codigo aleatorio de verificacion
+        const codigo = Math.floor(100000 + Math.random () * 900000);
+
+        //Guardar codigo en la base de datos 
+        await pool.query('UPDATE usuarios SET codigo_verificacion = ? WHERE id_usuario = ?', [codigo, result.insertId]);
+
+        // Enviar correo
+        await transporte.sendMail({
+            from: '"Mi APP" <tucorreo@gmail.com>',
+            to: correo,
+            subject: "Verificar tu cuenta",
+            text: `Tu código de verificación es: ${codigo}`
+        });
+
+
+
+        res.status(201).json({ message: 'Usuario registrado. revisa tu correo para verificar la cuenta!', id_usuario: result.insertId });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
+
+// Ruta de verificacion correo 
+router.post('/verificar', async (req, res) => {
+    const {correo, codigo} = req.body;
+    const [rows] = await pool.query(
+        'SELECT * FROM usuarios WHERE correo = ?', [correo]);
+        if (rows.length === 0) return res.status(404).json({error: 'Usuario no encontrado'});
+
+        const usuario  = rows[0];
+
+        if (usuario.codigo_verificacion != codigo) {
+            return res.status(400).json({error: 'Codigo incorrecto'});
+        }
+
+        // Activar usuario
+        await pool.query('UPDATE usuarios SET verificado = 1, codigo_verificacion = NULL WHERE correo= ?', [correo]);
+        res.json({message: 'Cuenta verificada correctamente'});
+});
+
 //iniciar sesion 
 
-router.post('/login', async (req, res) => {
+router.post('/iniciar_sesion', async (req, res) => {
     const {correo, contraseña} = req. body;
 
     if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
@@ -83,21 +119,13 @@ router.post('/login', async (req, res) => {
     
 });
 
-router.get('/perfil', (req, res)=> {
-    if (!req.session.usuario) {
-        return res.status(401).json({error: 'No se ha iniciado sesión'});
-    }
-
-    res.json({mensaje: 'Perfil accedido correctamente', usuario: req.session.usuario});
-});
-
 
 
 
 // cerra sesion 
 
 
-router.post('/logout', async (req, res)=> {
+router.post('/cerrar_sesion', async (req, res)=> {
     req.session.destroy(err =>{
         if (err) {
             return res.status(500).json({mensaje: 'Error al cerrar sesión'});  
@@ -108,7 +136,7 @@ router.post('/logout', async (req, res)=> {
 });
 
 // recuperar contraseña
-router.post('/recuperar_password', async (req, res)=>{
+router.post('/recuperar_clave', async (req, res)=>{
     const {correo, nuevaContraseña}= req.body;
 
     if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
@@ -176,6 +204,34 @@ router.put('/:id_usuario', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+
+//Obtener el perfil del usuario
+router.get('/perfil', async (req , res) => {
+    if (!req.session.usuario) {
+        return res.status(401).json({error: 'No has iniciado sesion'});
+    }
+    const {id_usuario, nombre, correo} = req.session.usuario;
+
+    res.json({
+        mensaje: 'Perfil accedido correctamente',
+        usuario: {id_usuario, nombre, correo}
+    });      
+});
+
+//Ruta para configurar Nodemailer, permite envia codigos de verificacion al correo
+
+const nodemailer = require("nodemailer");
+//configurar el transporte
+
+const transporte = nodemailer.createTransport({
+    service: "gmail", //O otro proveedor de direccion
+    auth: {
+        user: "tucorreo@gmail.com",
+        pass: "tu_contraseña_app", // generar contraseña de app si es gmail
+    },
+});
+
 
 // Buscar un usuario por ID
 router.get('/:id_usuario', async (req, res) => {
