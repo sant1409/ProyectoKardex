@@ -1,0 +1,13 @@
+.registro.page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px
+}
+
+.registro-page h1 {
+    margin-bottom: 20px;
+    color: #333;
+
+
+}

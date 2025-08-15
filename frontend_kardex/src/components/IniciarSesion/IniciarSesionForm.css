@@ -1,0 +1,36 @@
+.iniciarsesion-form {
+    display: flex;
+    flex-direction:  column;
+    gap: 15px;
+    width: 270px;
+    background: #f2f2f2;
+    padding: 20px;
+    border-radius: 10px;
+
+}
+
+.iniciarsesion-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5 px;
+}
+
+.iniciarsesion-form button {
+    padding: 10px;
+    background:#68d2ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+}
+
+.registro-form button:hover {
+  background: #68d2ff;
+}
+
+.mensaje {
+    color:red;
+    font-size: 14px;
+}
+

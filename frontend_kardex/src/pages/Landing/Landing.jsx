@@ -1,6 +1,7 @@
 import { useState } from "react";
-import Registro from "../components/Registro";
-import IniciarSesion from "../components/IniciarSesion";
+import RegistroForm from "../../components/Registrarse/RegistroForm";
+import IniciarSesionForm from "../../components/IniciarSesion/IniciarSesionForm";
+
 
 import "./Landing.css";
 
@@ -13,9 +14,11 @@ export default function Landing() {
                 <h2>Bienvenido</h2>
                 <button onClick={() => setMostrar("registro")}>Registrarse</button>
                 <button onClick={() => setMostrar("login")}>Iniciar Sesión</button>
+                
 
-                {mostrar === "registro" && <Registro />}
-                {mostrar === "login" && <IniciarSesion />}
+                {mostrar === "registro" && <RegistroForm />}
+                {mostrar === "login" && <IniciarSesionForm />}
+               
             </div>
         </div>
     );

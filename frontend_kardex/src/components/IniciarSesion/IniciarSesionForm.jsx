@@ -1,4 +1,6 @@
-import { useState } from "react";
+import {useState} from "react";
+import './IniciarSesionForm.css';
+
 
 export default function Login() {
     const [correo, setCorreo] = useState("");
@@ -38,7 +40,7 @@ export default function Login() {
         <div>
             <h2>Iniciar Sesión</h2>
             {mensaje && <p>{mensaje}</p>}
-            <form onSubmit={handleSubmit}>
+            <form className="iniciarsesion-form" onSubmit={handleSubmit}>
                 <input 
                     type="email"
                     placeholder="Correo"

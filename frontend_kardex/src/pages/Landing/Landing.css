@@ -1,25 +1,25 @@
-.landing-container {
-  display: flex;
+.landing-container {    /*es el contenedor general de la pagina  */
+  display: flex;  
   justify-content: center;
   align-items: center;
   gap: 50px;
   min-height: 100vh;
-  background: #ebedef;
+  background: #88bbf2;
   padding: 20px;
   flex-wrap: wrap;
 }
 
-.landing-card {
+.landing-card {           /*Targetas dentro del contenedor, donde podrian ir textos, botones, imagenes */
   background: #f2efef;
   padding: 40px 30px;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(10, 2, 2, 0.1);
+  box-shadow: 0 4px 15px rgba(149, 72, 72, 0.1);
   text-align: center;
   width: 300px;
   transition: transform 0.3s;
 }
 
-.landing-card:hover {
+.landing-card:hover {  /* estilos de titulos y parrafo dentro de las tarjetas  */
   transform: translateY(-5px);
 }
 
@@ -28,11 +28,11 @@
   color: #333;
 }
 
-.landing-card p {
+.landing-card p {      /* estilos de titulos y parrafo dentro de las tarjetas  */
   color: #555;
 }
 
-.landing-btn {
+.landing-btn {         /*Boton dentro de la tarjeta */
   display: inline-block;
   margin-top: 80px;
   padding: 10px 25px;

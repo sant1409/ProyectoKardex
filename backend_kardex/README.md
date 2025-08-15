@@ -41,6 +41,7 @@ npm install
 npm create vite@latest  = Al ejecutar este, te salen las opciones de con que dependencias quieres realizar el proyecto
 npm install react
 npm install react-dom
+npm install react-router-dom
 
 ```
 ## Pasos para migrar el proyecto para un repositorio en git hub
