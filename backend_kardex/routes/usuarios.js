@@ -2,10 +2,25 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const bcrypt = require('bcrypt');
+const nodemailer = require("nodemailer");
+
+
+
+
+//Ruta para configurar Nodemailer, permite envia codigos de verificacion al correo
+
+const transporte = nodemailer.createTransport({
+    service: "gmail", //O otro proveedor de direccion
+    auth: {
+        user: "automatizarkardex@gmail.com",
+        pass: "glrz vmza kpuc uyja", // generar contraseña de app si es gmail
+    },
+});
+
 
 // registrar un usuario
 router.post('/registrarse', async (req, res) => {
-    const { correo, nombre, contraseña } = req.body;
+    const { correo, nombre, contraseña	 } = req.body;
 
     if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
         return res.status(400).json ({error: 'Correo invalido o faltante'});
@@ -19,34 +34,36 @@ router.post('/registrarse', async (req, res) => {
         return res.status(400).json({error: 'La contraseña debe tener almenos 6 caracteres'});
     }
 
-    if (!correo || !nombre || !contraseña) return res.status(400).json({error: 'Datos incompletos'});
 
     try {
+       
+
+
         const contraseñaEncriptada = await bcrypt.hash(contraseña, 10);
 
-        const [result] = await pool.query(
-            'INSERT INTO usuarios (correo, nombre, contraseña, verificado) VALUES (?, ?, ?, ?)',
-            [correo, nombre, contraseñaEncriptada, 0] // 0 = no verificado
-
-        );
         //Crear un codigo aleatorio de verificacion
-        const codigo = Math.floor(100000 + Math.random () * 900000);
+        const codigo = String(Math.floor(100000 + Math.random () * 900000));
+         console.log(codigo);
 
-        //Guardar codigo en la base de datos 
-        await pool.query('UPDATE usuarios SET codigo_verificacion = ? WHERE id_usuario = ?', [codigo, result.insertId]);
-
-        // Enviar correo
+          // Enviar correo
         await transporte.sendMail({
-            from: '"Mi APP" <tucorreo@gmail.com>',
+            from: '"Mi APP" <automatizarkardex@gmail.com>',
             to: correo,
             subject: "Verificar tu cuenta",
             text: `Tu código de verificación es: ${codigo}`
         });
 
+        const [result] = await pool.query(
+            'INSERT INTO usuarios (correo, nombre, contraseña,  codigo_verificacion) VALUES (?, ?, ?, ?)',
+            [correo, nombre, contraseñaEncriptada,  codigo] 
 
+        );
 
         res.status(201).json({ message: 'Usuario registrado. revisa tu correo para verificar la cuenta!', id_usuario: result.insertId });
     } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({error: 'El correo ya esta registrado'});
+        }
         res.status(500).json({ error: error.message });
     }
 });
@@ -75,45 +92,41 @@ router.post('/verificar', async (req, res) => {
 router.post('/iniciar_sesion', async (req, res) => {
     const {correo, contraseña} = req. body;
 
-    if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
-        return res.status(400).json ({error: 'Correo invalido o faltante'});
+    
+
+    if (!correo || !contraseña) {
+        return res.status(400).json({error: 'Correo y contraseña requeridos'});
     }
 
-    if (!contraseña) {
-        return res.status(400).json({error: 'La contraseña es requerida'})
-    }
     try {
 
-
-        const correoLimpio = correo.trim();
-
         const [rows] = await pool.query(
-            'SELECT * FROM usuarios WHERE correo = ?',
-            [correoLimpio]
-        );
+            'SELECT * FROM usuarios WHERE correo = ?', [correo]);
 
         if (rows.length === 0) {
             return res.status(401).json({mensaje: 'correo no registrado'});
         }
-        const usuarios = rows[0];
-        const coincide = await bcrypt.compare(contraseña, usuarios.contraseña);
 
-        if (!coincide){
-            return res.status(401).json ({mensaje: 'Contraseña incorrecta'});
+        const usuario = rows[0];
+        if (!usuario.verificado) {
+            return res.status(403).json ({error: 'Cuenta  no verificada'});
         }
+
+        const coincide = await bcrypt.compare(contraseña, usuario.contraseña);
+         if (!coincide) return res.status(401).json ({mensaje: 'Contraseña incorrecta'});
+        
 
        
        req.session.usuario = {
-        id_usuario: usuarios.id_usuario,
-        nombre: usuarios.nombre,
-        correo: usuarios.correo
+        id_usuario: usuario.id_usuario,
+        nombre: usuario.nombre,
+        correo: usuario.correo
        };
     
        res.json ({mensaje: 'Inicio de sesion exitoso', usuario: req.session.usuario});
 
 
     } catch (error) {
-        console.error(error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
     }
     
@@ -201,6 +214,9 @@ router.put('/:id_usuario', async (req, res) => {
 
         res.json({ message: 'Usuario actualizado exitosamente', result });
     } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({error: 'El correo ya esta registrado'})
+        }
         res.status(500).json({ error: error.message });
     }
 });
@@ -219,18 +235,6 @@ router.get('/perfil', async (req , res) => {
     });      
 });
 
-//Ruta para configurar Nodemailer, permite envia codigos de verificacion al correo
-
-const nodemailer = require("nodemailer");
-//configurar el transporte
-
-const transporte = nodemailer.createTransport({
-    service: "gmail", //O otro proveedor de direccion
-    auth: {
-        user: "tucorreo@gmail.com",
-        pass: "tu_contraseña_app", // generar contraseña de app si es gmail
-    },
-});
 
 
 // Buscar un usuario por ID

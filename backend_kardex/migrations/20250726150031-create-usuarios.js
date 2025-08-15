@@ -21,6 +21,17 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
+
+      verificado: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+
+      },
+      codigo_verificacion: {
+      type: Sequelize.STRING,
+      allowNull: true
+      },
+
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
