@@ -12,8 +12,9 @@ export default function Landing() {
         <div className="landing-container">
             <div className="landing-card">
                 <h2>Bienvenido</h2>
-                <button onClick={() => setMostrar("registro")}>Registrarse</button>
-                <button onClick={() => setMostrar("login")}>Iniciar Sesión</button>
+              <button className="btn-registro" onClick={() => setMostrar("registro")}>Registrarse</button>
+              <button className="btn-iniciar" onClick={() => setMostrar("login")}>Iniciar Sesión</button>
+
                 
 
                 {mostrar === "registro" && <RegistroForm />}

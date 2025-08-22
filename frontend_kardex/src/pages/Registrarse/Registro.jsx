@@ -1,6 +1,6 @@
 
 import RegistroForm from "../../components/Registrarse/RegistroForm";
-import './Registro.css';
+
 
 export  default  function RegistroPage() {
     return (

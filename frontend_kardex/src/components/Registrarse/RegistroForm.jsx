@@ -49,7 +49,7 @@ export default function Registro() {
       const res = await fetch("http://localhost:3000/usuarios/verificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, codigo }),
+        body: JSON.stringify({ correo, codigo}),
       });
 
       const data = await res.json();
@@ -72,6 +72,8 @@ export default function Registro() {
         {paso === "verificar" && "Verificar correo"}
         {paso === "verificado" && "¡Registro completo!"}
       </h2>
+
+        <div className="registrase-container">
 
       {mensaje && <p className="mensaje">{mensaje}</p>}
 
@@ -97,9 +99,13 @@ export default function Registro() {
           />
           <button type="submit">Registrarse</button>
         </form>
+        
+        
       )}
+      </div>
 
       {paso === "verificar" && (
+          <div className="registrase-container">
         <form className="registro-form" onSubmit={handleSubmitVerificacion}>
           <input
             type="text"
@@ -109,6 +115,7 @@ export default function Registro() {
           />
           <button type="submit">Verificar</button>
         </form>
+        </div>
       )}
     </div>
   );

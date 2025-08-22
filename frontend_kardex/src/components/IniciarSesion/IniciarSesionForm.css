@@ -1,3 +1,10 @@
+.iniciarsesion-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
 .iniciarsesion-form {
     display: flex;
     flex-direction:  column;
@@ -25,7 +32,7 @@
 
 }
 
-.registro-form button:hover {
+.iniciarseion-form button:hover {
   background: #68d2ff;
 }
 

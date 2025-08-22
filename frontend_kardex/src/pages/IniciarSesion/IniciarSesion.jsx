@@ -1,5 +1,5 @@
 import IniciarSesionForm from "../../components/IniciarSesion/IniciarSesionForm.jsx";
-import './IniciarSesion.css'
+
 
 
 export default function IniciarSesionPage() {

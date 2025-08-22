@@ -1,0 +1,51 @@
+.Dashboard-container {
+    display: flex;
+    min-height: 100vh;
+
+}
+
+.Dashboard {
+    width: 250px;
+    background:#68d2ff;
+    color:white;
+    padding: 16px;
+}
+
+.Dashboard h2 {
+    font-size: 1.125rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+
+}
+
+
+.Dashboard ul li {
+    margin-bottom: 8px;
+
+}
+
+.Dashboard ul li a:hover{
+    color: #60a5fa;
+    align-items: center;
+    gap: 8px;
+}
+
+.main-content {
+    flex: 1;
+    padding: 24px;
+    background-color: #f3f4f6;
+}
+
+.logout-button {
+    margin-top: 16px;
+    background-color: #0f72ce;
+    border-radius: 10px;
+    text-align: left;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #0f72ce;
+}

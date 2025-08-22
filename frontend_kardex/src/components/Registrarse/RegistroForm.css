@@ -1,13 +1,19 @@
+.registrarse-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .registro-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    width: 270px; 
+    width: 270px;
     background: #f2f2f2;
     padding: 20px;
-    border-radius: 10px; /* más redondeado */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* agrega sombra */
-    margin: 0 auto; /* centra el formulario horizontalmente */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    margin: 0 auto;
 }
 
 .registro-form input {
@@ -23,24 +29,16 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
     transition: background 0.3s;
 }
 
 .registro-form button:hover {
-    background: #42bfff; /* cambia un poco al pasar el mouse */
+    background: #42bfff;
 }
 
 .mensaje {
     color: red;
     font-size: 14px;
     margin-bottom: 10px;
-}
-
-
-.form-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh; /* ocupa toda la pantalla */
 }

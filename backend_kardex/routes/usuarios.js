@@ -150,35 +150,95 @@ router.post('/cerrar_sesion', async (req, res)=> {
 
 // recuperar contraseña
 router.post('/recuperar_clave', async (req, res)=>{
-    const {correo, nuevaContraseña}= req.body;
+    const {correo}= req.body;
 
     if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
         return res.status(400).json({ error: 'Correo inválido o faltante' });
-    }
-
-    if (!nuevaContraseña || nuevaContraseña.length < 6) {
-        return res.status(400).json ({error: 'La nueva contraseña debe de tener almenos 6 caracteres'})
-    }
-    
-
+    } 
 
     try {
 
         
-        const contraseñaEncriptada = await bcrypt.hash(nuevaContraseña, 10);
-        const [result] = await pool.query(
-            'UPDATE usuarios SET contraseña = ? WHERE correo = ?',
-            [contraseñaEncriptada, correo]
-        );
-        if (result.affectedRows === 0) {
-            return res.status(404).json({mensaje: 'Correo no  encontrado'});
+        const [rows] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [correo]);
+        if (rows.length === 0) {
+            return res.status(404).json({error: "Correo no registrado"});
+
         }
-        res.json({mensaje: 'Contraseña actulizada con  éxito'});
-    }catch (error){
+            
+    const codigo = String(Math.floor(100000 + Math.random() * 900000));
+
+    await pool.query('UPDATE usuarios SET codigo_recuperacion  = ? where correo = ?', [codigo, correo]);
+
+    await transporte.sendMail ({
+        from: '"Mi APP" <automatizarkardex@gmail.com>',
+        to: correo,
+        subject: "Recuperar contraseña",
+        text: `Tu codigo de recuperacion es: ${codigo}`
+    });
+
+
+        res.json({mensaje: 'Código enviado al correo'});
+    } catch (error){
         console.error(error);
         res.status(500).json({mensaje: 'Error en el servidor'});
     }
 });
+
+// Cambiar la contraseña
+router.post('/resetear_clave', async (req, res) => {
+    const {codigo, nuevaContraseña} = req.body;
+
+    if (!nuevaContraseña || nuevaContraseña.length < 6) {
+        return res.status(400).json({error: 'La nueva contraseña debe de tener al menos 6 caracteres'});
+    }
+
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM usuarios WHERE codigo_recuperacion = ?',
+            [ codigo]
+        );
+
+        if (rows.length === 0) {
+            return res.status(400).json({error: 'Código incorrecto'});
+        }
+
+        const contraseñaEncriptada = await bcrypt.hash(nuevaContraseña, 10);
+
+        await pool.query(
+            'UPDATE usuarios SET contraseña = ?, codigo_recuperacion = NULL WHERE id_usuario = ?',
+            [contraseñaEncriptada, rows[0].id_usuario]
+        );
+
+        res.json({message: 'Contraseña actualizada correctamente'});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({mensaje: 'Error en el servidor'});
+    }
+});
+
+
+// verificar el codigo para cambiar la contraseña
+
+router.post('/verificar_codigo', async(req, res) => {
+    const {correo, codigo} = req.body
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM usuarios WHERE correo  = ? AND codigo_recuperacion = ?',
+            [correo, codigo]
+        );
+
+        if (rows.length === 0) {
+            return res.status(400).json({error: 'Código incorrecto'});
+        }
+
+        res.json({message: 'Código válido, puedes cambiar la contraseña'});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({mensaje: 'Error en el servidor'});
+    }
+});
+        
+
 
 // Modificar usuario
 router.put('/:id_usuario', async (req, res) => {

@@ -47,3 +47,34 @@
 .landing-btn:hover {
   background: #45a049;
 }
+
+
+
+.btn-registro {
+  background-color: #fdffff;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-registro:hover {
+  background-color: #ecedee;
+}
+
+.btn-iniciar {
+  background-color: #fdffff;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-iniciar:hover {
+  background-color: #ecedee;
+}
+
