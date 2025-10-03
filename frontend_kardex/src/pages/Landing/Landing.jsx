@@ -1,26 +1,32 @@
 import { useState } from "react";
-import RegistroForm from "../../components/Registrarse/RegistroForm";
 import IniciarSesionForm from "../../components/IniciarSesion/IniciarSesionForm";
+import Registro from "../../components/Registrarse/RegistroForm";
+import AuthLayout from "../../layouts/AuthLayout";
+import './Landing.css';
 
+export default function AuthPage() {
+  const [vista, setVista] = useState("login"); // "login" o "registro"
 
-import "./Landing.css";
+  return (
+    <AuthLayout>
+      <div className="botones-landing">
+        <button
+          className={vista === "login" ? "activo" : ""}
+          onClick={() => setVista("login")}
+        >
+          Iniciar sesión
+        </button>
+        <button
+          className={vista === "registro" ? "activo" : ""}
+          onClick={() => setVista("registro")}
+        >
+          Registrarse
+        </button>
+      </div>
 
-export default function Landing() {
-    const [mostrar, setMostrar] = useState("");
-
-    return (
-        <div className="landing-container">
-            <div className="landing-card">
-                <h2>Bienvenido</h2>
-              <button className="btn-registro" onClick={() => setMostrar("registro")}>Registrarse</button>
-              <button className="btn-iniciar" onClick={() => setMostrar("login")}>Iniciar Sesión</button>
-
-                
-
-                {mostrar === "registro" && <RegistroForm />}
-                {mostrar === "login" && <IniciarSesionForm />}
-               
-            </div>
-        </div>
-    );
+      <div className="formularios-landing">
+        {vista === "login" ? <IniciarSesionForm /> : <Registro />}
+      </div>
+    </AuthLayout>
+  );
 }

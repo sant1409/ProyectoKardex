@@ -1,9 +1,8 @@
-import {useState} from "react";
+import {useState } from "react";
 import './IniciarSesionForm.css';
 import { useNavigate } from "react-router-dom";
 
-
-export default function Login() {
+export default function IniciarSesionForm() {
     const [correo, setCorreo] = useState("");
     const [contraseña, setContraseña] = useState("");
     const [mensaje, setMensaje] = useState("");
@@ -19,12 +18,13 @@ export default function Login() {
             setMensaje("Todos los campos son obligatorios");
             return;
         }
-
         try {
             const res = await fetch("http://localhost:3000/usuarios/iniciar_sesion", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ correo, contraseña }),
+                credentials: "include"
+                 
             });
 
             const data = await res.json();
@@ -33,10 +33,8 @@ export default function Login() {
                 setCorreo("");
                 setContraseña("");
 
-                // guarda el token que se envia al backend
-                localStorage.setItem("token", data.token);
-
-                  localStorage.setItem("auth", "true");
+               localStorage.setItem("usuarioId", data.usuario.id_usuario);
+                localStorage.setItem("auth", "true");
 
 
                 if (data.usuario) {
@@ -44,15 +42,15 @@ export default function Login() {
                     console.log("DEBUG: usuario guardado", data.usuario);
                 }
 
+                console.log("Guardado en localStorage -> usuarioId:", data.usuario.id_usuario);
+                console.log("Revisar localStorage.getItem:", localStorage.getItem("usuarioId"));
+
                 //redirige al dashboard
                 navigate("/dashboard");
 
                 //limpiar los campos
                 setCorreo("");
                 setContraseña("");
-
-
-
             } else {
                 setMensaje(data.error || data.mensaje || "Error al iniciar sesión");
             }
@@ -62,14 +60,14 @@ export default function Login() {
         }
     };
 
-
   const handleSubmitRecuperarClave = async (e) => {
         e.preventDefault();
         try {
             const res = await fetch("http://localhost:3000/usuarios/resetear_clave", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({codigo, nuevaContraseña})
+                body: JSON.stringify({codigo, nuevaContraseña}),
+                credentials: "include"
                 });
 
     
@@ -85,19 +83,15 @@ export default function Login() {
       setMensaje("Error de conexión con el servidor");
     }
   };
-
-
-
       const handleSubmitCorreo  = async (e) => {
         e.preventDefault();
         try {
             const res = await fetch("http://localhost:3000/usuarios/recuperar_clave", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({correo})
+                body: JSON.stringify({correo}),
+                credentials: "include"
                 });
-
-    
       const data = await res.json();
       if (res.ok) {
         setMensaje("El correo se envió correctamente");
@@ -110,8 +104,6 @@ export default function Login() {
       setMensaje("Error de conexión con el servidor");
     }
   };
-
-
   const handleSubmitCodigo = async (e) => {
     e.preventDefault();
     try {
@@ -119,6 +111,7 @@ export default function Login() {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({correo, codigo}),
+             credentials: "include"
 
         });
         const data = await res.json();
@@ -135,14 +128,11 @@ export default function Login() {
     }
     
   };
-    
-    
-
     return (
         <div>
-            {mensaje && <p>{mensaje}</p>}
+            
             {paso === "iniciar_sesion" && (
-                <div className="iniciarsesion-container">
+             <div className= "iniciarsesion-container">
             <form className="iniciarsesion-form" onSubmit={handleSubmit}>
                 <h2>Iniciar Sesión</h2>
                 <input 
@@ -166,13 +156,18 @@ export default function Login() {
                     ¿Olvidaste tu contraseña? 
                 </p>
 
+            
+                {mensaje && <p className="mensaje">{mensaje}</p>}  
+
                 <button type="submit">Iniciar Sesión</button>
+                
             </form>
             </div>
+            
             )}
 
             {paso === "correo" && (
-                <div className="iniciarsesion-container">
+                   <div className= "iniciarsesion-container">
                 <form className="iniciarsesion-form" onSubmit= {handleSubmitCorreo}>
                     <h2>Recuperar contraseña</h2>
                     <input
@@ -181,13 +176,14 @@ export default function Login() {
                     value= {correo}
                     onChange={(e) => setCorreo(e.target.value)}
                     />
+                    
+                    {mensaje && <p className="mensaje">{mensaje}</p>} 
                     <button type= "submit">Enviar código</button>
-                </form>
-                </div>
+                </form>  
+                </div>  
             )}
-
             {paso === "codigo" && (
-                <div className="iniciarsesion-container">
+                    <div className= "iniciarsesion-container">
                 <form className="iniciarsesion-form" onSubmit={handleSubmitCodigo}>
                     <h2>Verificar código</h2>
                     <input
@@ -195,14 +191,15 @@ export default function Login() {
                     placeholder="Codigo enviado a tu correo "
                     value= {codigo}
                     onChange={(e) => setCodigo(e.target.value)} 
-                    />
+                    />           
+                    {mensaje && <p className="mensaje">{mensaje}</p>} 
                     <button type="submit">Verificar</button>
                 </form>
                 </div>
+                
             )}
-
             {paso === "nuevaclave" && (
-                <div className="iniciarsesion-container">
+                    <div className= "iniciarsesion-container">
                 <form className="iniciarsesion-form" onSubmit={handleSubmitRecuperarClave}>
                     <h2>Nueva contraseña</h2>
                     <input 
@@ -210,13 +207,13 @@ export default function Login() {
                     placeholder="Escrie tu nueva contraseña"
                     value={nuevaContraseña}
                     onChange={(e) => setNuevaContraseña(e.target.value)}
-                    />
+                    />      
+                    {mensaje && <p className="mensaje">{mensaje}</p>} 
                     <button type="submit">Cambiar contraseña</button>
-                </form>
-                </div>
+                </form> 
+                </div> 
+                 
             )}
         </div>
-            
-
         );
     }

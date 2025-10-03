@@ -1,6 +1,8 @@
 import { useState } from "react";
 import './RegistroForm.css'
 
+
+
 export default function Registro() {
 
   const [correo, setCorreo] = useState("");
@@ -28,6 +30,7 @@ export default function Registro() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo, nombre, contraseña }),
+          credentials: 'include'
       });
 
       const data = await res.json();
@@ -50,6 +53,7 @@ export default function Registro() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo, codigo}),
+         credentials: "include"
       });
 
       const data = await res.json();
@@ -67,18 +71,13 @@ export default function Registro() {
 
   return (
     <div>
-      <h2>
-        {paso === "registro" && "Registro de usuario"}
-        {paso === "verificar" && "Verificar correo"}
-        {paso === "verificado" && "¡Registro completo!"}
-      </h2>
-
-        <div className="registrase-container">
-
-      {mensaje && <p className="mensaje">{mensaje}</p>}
+       
 
       {paso === "registro" && (
+       
+        <div className="registrarse-container">
         <form className="registro-form" onSubmit={handleSubmitRegistro}>
+          <h2>Registro de usuario</h2>
           <input
             type="email"
             placeholder="Correo"
@@ -97,26 +96,43 @@ export default function Registro() {
             value={contraseña}
             onChange={(e) => setContraseña(e.target.value)}
           />
+          {mensaje && <p className="mensaje">{mensaje}</p>}
           <button type="submit">Registrarse</button>
         </form>
+        </div>
         
         
       )}
-      </div>
+      
 
       {paso === "verificar" && (
-          <div className="registrase-container">
+         
+            <div className="registrarse-container">
         <form className="registro-form" onSubmit={handleSubmitVerificacion}>
+              <h2>Verificar correo</h2>
           <input
             type="text"
             placeholder="Código de verificación"
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
           />
+          {mensaje && <p className="mensaje">{mensaje}</p>}
           <button type="submit">Verificar</button>
         </form>
         </div>
+        
+        
       )}
-    </div>
-  );
+  
+
+    {paso === "verificado" && (
+      <div className="registro-form">
+     
+          <p>¡Registro completo!</p>
+        </div>
+      
+    )}
+  </div>
+);
+
 }

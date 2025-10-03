@@ -1,0 +1,29 @@
+import '../pages/Landing/Landing.css';
+
+export default function AuthLayout({ children }) {
+  return (
+    <div className="landing-container">
+      <div className="left-column">
+        <div className="contenido-top">
+          {children}
+        </div>
+
+        {/* Logo abajo */}
+        <div className="logo-bottom">
+          <img src="/slider/Logo.png" alt="Logo" />
+        </div>
+      </div>
+
+      {/* Columna derecha con imagen + overlay */}
+      <div className="right-column">
+        <img src="/slider/Almacen.png" alt="Almacén" />
+
+        {/* Overlay de texto */}
+        <div className="overlay-text">
+          <h1>Bienvenido</h1>
+          <p>Al almacén de reactivos e insumos</p>
+        </div>
+      </div>
+    </div>
+  );
+}

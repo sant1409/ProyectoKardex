@@ -1,5 +1,6 @@
 // En Perfil.jsx
 import { useEffect, useState } from "react";
+import './Perfil.css';
 
 export default function Perfil() {
   const [usuario, setUsuario] = useState({nombre: '', correo: ''});
@@ -13,9 +14,11 @@ export default function Perfil() {
 
   return (
     <div>
+      <div className="perfil-container">
       <h2>Perfil</h2>
       <p>Nombre: {usuario.nombre}</p>
       <p>Correo: {usuario.correo}</p>
+    </div>
     </div>
   );
 }

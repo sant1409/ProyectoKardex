@@ -1,0 +1,178 @@
+/* Contenedor principal */
+.insumos-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Título */
+.insumos-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  text-align: center;
+}
+
+/* Grid para el formulario */
+.insumos-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+/* Grupo de campo */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Etiquetas */
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #34495e;
+  text-transform: capitalize;
+}
+
+/* Inputs normales */
+.form-group input {
+  padding: 10px 12px;
+  border: 2px solid #dcdde1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Efecto focus */
+.form-group input:focus {
+  border-color: #2980b9;
+  box-shadow: 0 0 6px rgba(41, 128, 185, 0.4);
+}
+
+/* Para react-select */
+.form-group .css-13cymwt-control,
+.form-group .css-t3ipsp-control {
+  border: 2px solid #dcdde1 !important;
+  border-radius: 8px !important;
+  min-height: 42px;
+  font-size: 14px;
+}
+
+.form-group .css-13cymwt-control:hover,
+.form-group .css-t3ipsp-control:hover {
+  border-color: #2980b9 !important;
+  box-shadow: 0 0 6px rgba(41, 128, 185, 0.4);
+}
+
+/* Botón */
+.insumos-button {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.insumos-button button {
+  background-color: #27ae60;
+  color: white;
+  font-size: 16px;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.insumos-button button:hover {
+  background-color: #219150;
+}
+
+/* Mensaje */
+.mensaje {
+  background: #eafaf1;
+  color: #27ae60;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #27ae60;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
+/* Estilos añadidos para los botones dentro de cada tirilla (Actualizar / Eliminar) */
+/* ------------------------------------------------------------------ */
+
+.tirilla-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tirilla-buttons button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.08s ease;
+}
+
+/* Botón Actualizar (primer botón) */
+.tirilla-buttons button:first-child {
+  background-color: #2980b9;
+  color: #fff;
+}
+
+.tirilla-buttons button:first-child:hover {
+  background-color: #1f6391;
+  transform: translateY(-1px);
+}
+
+/* Botón Eliminar (último botón) */
+.tirilla-buttons button:last-child {
+  background-color: #2980b9;
+  color: #fff;
+}
+
+.tirilla-buttons button:last-child:hover {
+  background-color:  #1f6391;
+  transform: translateY(-1px);
+}
+
+
+/* Contenedor para el botón cerrar */
+.btn-cerrar {
+  display: flex;
+  justify-content: flex-start; /* a la izquierda */
+  margin-bottom: 20px;
+}
+
+/* Estilo del botón cerrar */
+.btn-cerrar button {
+  background-color: #7f8c8d;  /* gris oscuro */
+  color: #fff;
+  font-size: 16px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.08s ease;
+}
+
+/* Hover */
+.btn-cerrar button:hover {
+  background-color: #606e73;
+  transform: translateY(-1px);
+}
+
+

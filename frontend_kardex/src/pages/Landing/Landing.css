@@ -1,80 +1,117 @@
-.landing-container {    /*es el contenedor general de la pagina  */
-  display: flex;  
-  justify-content: center;
+
+
+/* CONTENEDOR PRINCIPAL */
+.landing-container {
+  display: flex;
+  min-height: 100vh;     /* ocupa toda la pantalla */
+  align-items: stretch;  /* que ambas columnas ocupen la altura completa */
+  padding: 0;
+  margin: 0;
+}
+
+/* COLUMNA IZQUIERDA (login / registro) */
+.left-column {
+  width: 40vw;           
+  min-width: 360px;      
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* contenido arriba, logo abajo */
+  align-items: center;    
+  padding: 40px;
+  background-color: #fff; 
+  box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+}
+
+/* CONTENIDO SUPERIOR (botones + formularios) */
+.contenido-top {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 50px;
-  min-height: 100vh;
-  background: #88bbf2;
-  padding: 20px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
-.landing-card {           /*Targetas dentro del contenedor, donde podrian ir textos, botones, imagenes */
-  background: #f2efef;
-  padding: 40px 30px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(149, 72, 72, 0.1);
-  text-align: center;
-  width: 300px;
-  transition: transform 0.3s;
+/* BOTONES LOGIN / REGISTRO */
+.botones-landing {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.landing-card:hover {  /* estilos de titulos y parrafo dentro de las tarjetas  */
-  transform: translateY(-5px);
+.botones-landing button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
 }
 
-.landing-card h2 {
-  margin-bottom: 20px;
-  color: #333;
+.botones-landing button:hover {
+  background-color: #ccc;
 }
 
-.landing-card p {      /* estilos de titulos y parrafo dentro de las tarjetas  */
-  color: #555;
-}
-
-.landing-btn {         /*Boton dentro de la tarjeta */
-  display: inline-block;
-  margin-top: 80px;
-  padding: 10px 25px;
-  background: #4caf50;
+.botones-landing button.activo {
+  background-color: #007bff;
   color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: bold;
-
 }
 
-.landing-btn:hover {
-  background: #45a049;
+/* FORMULARIOS LOGIN / REGISTRO */
+.formularios-landing {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
-
-
-.btn-registro {
-  background-color: #fdffff;
-  color: black;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-weight: bold;
+.formularios-landing > .iniciarsesion-container,
+.formularios-landing > .registrarse-container {
+  width: 100%;
+  max-width: 400px;
 }
 
-.btn-registro:hover {
-  background-color: #ecedee;
+/* LOGO ABAJO */
+.logo-bottom {
+  margin-top: 20px;
+  text-align: center;
 }
 
-.btn-iniciar {
-  background-color: #fdffff;
-  color: black;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-weight: bold;
+.logo-bottom img {
+  max-width: 500px;
+  height: auto;
 }
 
-.btn-iniciar:hover {
-  background-color: #ecedee;
+/* Texto sobre la imagen */
+.right-column {
+  flex: 1;
+  height: 100vh;
+  overflow: hidden;
+  position: relative; /* importante para el overlay */
 }
 
+.right-column img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Overlay centrado */
+.overlay-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+
+.overlay-text h1 {
+  font-size: 60px;
+  margin: 0 0 10px;
+}
+
+.overlay-text p {
+  font-size: 30px;
+  margin: 0;
+}

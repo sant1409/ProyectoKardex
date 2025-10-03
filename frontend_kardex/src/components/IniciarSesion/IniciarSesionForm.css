@@ -1,43 +1,80 @@
-.iniciarsesion-container{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* IniciarSesionForm.css */
 
+.iniciarsesion-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+   gap: 60px;
+  padding: 20px;
+  margin-top: 210px;
+  padding-left: 80px;
+}
+
+
+
+
+
+.form-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    padding: 30px;
+    width: 100%;
 }
 
 .iniciarsesion-form {
     display: flex;
-    flex-direction:  column;
-    gap: 15px;
-    width: 270px;
-    background: #f2f2f2;
-    padding: 20px;
-    border-radius: 10px;
+    flex-direction: column;
+}
 
+.iniciarsesion-form h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
 }
 
 .iniciarsesion-form input {
-    padding: 10px;
+    width: 600px;
+    padding: 12px;
+    margin-bottom: 15px;
     border: 1px solid #ccc;
-    border-radius: 5 px;
+    border-radius: 8px;
+    font-size: 16px;
 }
 
 .iniciarsesion-form button {
-    padding: 10px;
-    background:#68d2ff;
+    padding: 12px;
+    background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-
+    font-size: 16px;
+    transition: background-color 0.3s ease;
 }
 
-.iniciarseion-form button:hover {
-  background: #68d2ff;
+.iniciarsesion-form button:hover {
+    background-color: #0056b3;
 }
 
 .mensaje {
-    color:red;
+    color: red;
+    margin-bottom: 10px;
     font-size: 14px;
+    text-align: center;
+}
+
+.iniciarsesion-form p {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.iniciarsesion-form p:hover {
+    text-decoration: underline;
+}
+
+.landing-container .iniciarsesion-container {
+  margin-top: 0;
 }
 

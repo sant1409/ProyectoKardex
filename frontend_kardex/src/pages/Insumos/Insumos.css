@@ -1,0 +1,118 @@
+/* Contenedor del buscador */
+.buscar-insumos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  margin-top: 15px;
+  align-items: center;
+  justify-content: flex-start; /* agrupa a la izquierda */
+  background: #f1f3f5;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* Inputs de búsqueda */
+.buscar-insumos input,
+.buscar-insumos select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  flex: 1 1 150px;
+  font-size: 14px;
+}
+
+/* Botón de búsqueda */
+.buscar-insumos button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.buscar-insumos button:hover {
+  background-color: #218838;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .buscar-insumos {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .buscar-insumos input,
+  .buscar-insumos select,
+  .buscar-insumos button {
+    flex: 1 1 100%;
+  }
+}
+
+/* 🔹 Contenedor de botones superior (volver y registrar) */
+.botones-top {
+  display: flex;
+  gap: 12px; /* espacio entre botones */
+  align-items: center;
+  justify-content: flex-start; /* juntos a la izquierda */
+  margin: 10px 0 15px 0;
+}
+
+/* 🔹 Botón registrar y confirmar */
+.btn-registrar,
+.btn-confirmar,
+.btn-exportar {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+.btn-registrar:hover,
+.btn-confirmar:hover {
+  background-color: #0056b3;
+}
+
+/* 🔹 Mini form */
+.form-mini,
+.Exportar{
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-mini label {
+  font-weight: bold;
+}
+
+.form-mini input,
+.form-mini select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  min-width: 120px; /* evita inputs muy pequeños */
+}
+
+/* 🔹 Botón volver */
+.btn-volver {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-volver:hover {
+  background: #2980b9;
+}
+
+
