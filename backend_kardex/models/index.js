@@ -44,4 +44,6 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+console.log('📌 Base de datos usada por Sequelize:', config.database);
+
 module.exports = db;

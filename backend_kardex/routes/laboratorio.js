@@ -59,7 +59,21 @@ router.get ('/:id_laboratorio', async (req, res) => {
         res.status(500).json({ error: error.message });
 
     }
-})
+});
+
+
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_laboratorio, nombre AS laboratorio FROM laboratorio"
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 router.delete ('/:id_laboratorio', async (req, res) => {
     try {

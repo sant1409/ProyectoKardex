@@ -69,15 +69,15 @@ try {
 });
 
 
-// Obtener todas las auditorías
-router.get('/', async (req, res) => {
-    try {
-        const [auditorias] = await pool.query('SELECT * FROM auditoria');
-        res.json(auditorias);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+router.get('/auditoria', async (req, res) => {
+  try {
+    const [result] = await pool.query('SELECT * FROM auditoria ORDER BY fecha DESC');
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
+
 
 
 module.exports = router;

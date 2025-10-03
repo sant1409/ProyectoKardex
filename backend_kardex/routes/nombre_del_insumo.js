@@ -61,6 +61,17 @@ router.get ('/:id_nombre_del_insumo', async (req, res) => {
 
     }
 });
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_nombre_del_insumo, nombre AS nombre_del_insumo FROM nombre_del_insumo"
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.delete ('/:id_nombre_del_insumo', async (req, res) => {
     try {

@@ -59,6 +59,18 @@ router.get ('/:id_proveedor_k', async (req, res) => {
     }
 });
 
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_proveedor_k, nombre AS proveedor_k FROM proveedor_k"
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.delete ('/:id_proveedor_k', async (req, res) => {
     try {
         const {id_proveedor_k} = req.params;

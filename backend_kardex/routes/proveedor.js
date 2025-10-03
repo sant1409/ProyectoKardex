@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+
 router.post ('/', async (req, res) => {
     try { 
 
@@ -18,7 +19,7 @@ router.post ('/', async (req, res) => {
 });
 
 
-
+// GET todos los registros
 router.put('/:id_proveedor', async (req, res) => {
     try{
 
@@ -57,6 +58,18 @@ router.get ('/:id_proveedor', async (req, res) => {
 
     }
 });
+
+
+// GET todos los proveedores
+router.get('/', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM proveedor');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 router.delete ('/:id_proveedor', async (req, res) => {
     try {

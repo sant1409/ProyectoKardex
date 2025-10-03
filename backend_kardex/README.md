@@ -23,6 +23,7 @@ npm install mysql2 = Es el conector de Node.js para MYSQL, permitiendo hacer con
 npm install sequelize = Es una ORM , que permite interactuar con la base de datos. Ej: crear migraciones
 npm install --save-dev sequelize-cli = Es la herramienta de línea de comandos para trabajar con Sequelize.
 npm install nodemailer  permite enviar codigos de verificacion al registrarse
+npm install node-cron
 ___________________
 Crear migraciones a la base de datos desde el backend
 npx sequelize-cli migration:generate --name create-nombre_entidad
@@ -42,6 +43,8 @@ npm create vite@latest  = Al ejecutar este, te salen las opciones de con que dep
 npm install react
 npm install react-dom
 npm install react-router-dom
+npm install react-select
+npm install xlsx file-saver  = sirve para exportar a excel
 
 ```
 ## Pasos para migrar el proyecto para un repositorio en git hub

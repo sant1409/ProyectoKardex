@@ -58,7 +58,22 @@ router.get ('/:id_clasificacion', async (req, res) => {
         res.status(500).json({ error: error.message });
 
     }
-})
+});
+
+
+
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_clasificacion, nombre AS clasificacion FROM clasificacion"
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 router.delete ('/:id_clasificacion', async (req, res) => {
     try {

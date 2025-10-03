@@ -13,7 +13,7 @@ const transporte = nodemailer.createTransport({
     service: "gmail", //O otro proveedor de direccion
     auth: {
         user: "automatizarkardex@gmail.com",
-        pass: "glrz vmza kpuc uyja", // generar contraseña de app si es gmail
+        pass: "dnnv qksc ddma fkgm", // generar contraseña de app si es gmail
     },
 });
 
@@ -37,8 +37,6 @@ router.post('/registrarse', async (req, res) => {
 
     try {
        
-
-
         const contraseñaEncriptada = await bcrypt.hash(contraseña, 10);
 
         //Crear un codigo aleatorio de verificacion
@@ -69,6 +67,54 @@ router.post('/registrarse', async (req, res) => {
 });
 
 
+//iniciar sesion 
+
+
+router.post('/iniciar_sesion', async (req, res) => {
+    const {correo, contraseña} = req.body;
+
+    if (!correo || !contraseña) {
+        return res.status(400).json({error: 'Correo y contraseña requeridos'});
+    }
+
+    try {
+
+        const [rows] = await pool.query(
+            'SELECT * FROM usuarios WHERE correo = ?', [correo]);
+
+        if (rows.length === 0) {
+            return res.status(401).json({mensaje: 'correo no registrado'});
+        }
+
+        const usuario = rows[0];
+
+         console.log("Usuario encontrado:", usuario);
+        if (!usuario.verificado) {
+            return res.status(403).json ({error: 'Cuenta  no verificada'});
+        }
+
+        const coincide = await bcrypt.compare(contraseña, usuario.contraseña);
+         if (!coincide) return res.status(401).json ({mensaje: 'Contraseña incorrecta'});
+        
+
+       
+       req.session.usuario = {
+        id_usuario: usuario.id_usuario,
+        nombre: usuario.nombre,
+        correo: usuario.correo
+       };
+       console.log("✅ Usuario guardado en sesión:", req.session.usuario);
+       res.json ({mensaje: 'Inicio de sesion exitoso', usuario: req.session.usuario});
+
+
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error en el servidor' });
+    }
+    
+});
+
+
+
 // Ruta de verificacion correo 
 router.post('/verificar', async (req, res) => {
     const {correo, codigo} = req.body;
@@ -86,52 +132,6 @@ router.post('/verificar', async (req, res) => {
         await pool.query('UPDATE usuarios SET verificado = 1, codigo_verificacion = NULL WHERE correo= ?', [correo]);
         res.json({message: 'Cuenta verificada correctamente'});
 });
-
-//iniciar sesion 
-
-router.post('/iniciar_sesion', async (req, res) => {
-    const {correo, contraseña} = req. body;
-
-    
-
-    if (!correo || !contraseña) {
-        return res.status(400).json({error: 'Correo y contraseña requeridos'});
-    }
-
-    try {
-
-        const [rows] = await pool.query(
-            'SELECT * FROM usuarios WHERE correo = ?', [correo]);
-
-        if (rows.length === 0) {
-            return res.status(401).json({mensaje: 'correo no registrado'});
-        }
-
-        const usuario = rows[0];
-        if (!usuario.verificado) {
-            return res.status(403).json ({error: 'Cuenta  no verificada'});
-        }
-
-        const coincide = await bcrypt.compare(contraseña, usuario.contraseña);
-         if (!coincide) return res.status(401).json ({mensaje: 'Contraseña incorrecta'});
-        
-
-       
-       req.session.usuario = {
-        id_usuario: usuario.id_usuario,
-        nombre: usuario.nombre,
-        correo: usuario.correo
-       };
-    
-       res.json ({mensaje: 'Inicio de sesion exitoso', usuario: req.session.usuario});
-
-
-    } catch (error) {
-        res.status(500).json({ mensaje: 'Error en el servidor' });
-    }
-    
-});
-
 
 
 
@@ -240,6 +240,7 @@ router.post('/verificar_codigo', async(req, res) => {
         
 
 
+
 // Modificar usuario
 router.put('/:id_usuario', async (req, res) => {
     const { correo, nombre, contraseña } = req.body;
@@ -282,19 +283,23 @@ router.put('/:id_usuario', async (req, res) => {
 });
 
 
-//Obtener el perfil del usuario
-router.get('/perfil', async (req , res) => {
+// Obtener el perfil del usuario
+router.get('/sesion', async (req, res) => {
+    console.log('💡 req.session:', req.session); // <-- esto te muestra toda la sesión
+
     if (!req.session.usuario) {
-        return res.status(401).json({error: 'No has iniciado sesion'});
+        console.log('⚠️ No hay usuario en sesión');
+        return res.status(401).json({ error: 'No has iniciado sesion' });
     }
-    const {id_usuario, nombre, correo} = req.session.usuario;
+
+    const { id_usuario, nombre, correo } = req.session.usuario;
+    console.log('✅ Usuario en sesión:', req.session.usuario);
 
     res.json({
         mensaje: 'Perfil accedido correctamente',
-        usuario: {id_usuario, nombre, correo}
-    });      
+        usuario: { id_usuario, nombre, correo }
+    });
 });
-
 
 
 // Buscar un usuario por ID

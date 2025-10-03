@@ -58,7 +58,19 @@ router.get ('/:id_casa_comercial', async (req, res) => {
         res.status(500).json({ error: error.message });
 
     }
-})
+});
+
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_casa_comercial, nombre AS casa_comercial FROM casa_comercial"
+   );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}); 
 
 router.delete ('/:id_casa_comercial', async (req, res) => {
     try {

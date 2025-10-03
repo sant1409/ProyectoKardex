@@ -61,6 +61,20 @@ router.get ('/:id_nombre_insumo', async (req, res) => {
     }
 });
 
+
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_nombre_insumo, nombre AS nombre_insumo FROM nombre_insumo"
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 router.delete ('/:id_nombre_insumo', async (req, res) => {
     try {
         const {id_nombre_insumo} = req.params;
@@ -78,6 +92,25 @@ router.delete ('/:id_nombre_insumo', async (req, res) => {
         res.status(500).json({error: error.message});
     }
 });
+
+router.get("/inventario", async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+       id_nombre_insumo AS id,
+        nombre AS nombre_insumo,
+        cantidad,
+        fecha_vencimiento
+      FROM nombre_insumo
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error("Error al obtener insumos:", error);
+    res.status(500).json({ error: "Error al obtener los insumos" });
+  }
+});
+
+
 
 
 

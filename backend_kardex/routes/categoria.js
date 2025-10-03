@@ -60,7 +60,20 @@ router.get ('/:id_categoria', async (req, res) => {
         res.status(500).json({ error: error.message });
 
     }
-})
+});
+
+// GET todos los registros
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id_categoria, nombre AS categoria FROM categoria"
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 router.delete ('/:id_categoria', async (req, res) => {
     try {
