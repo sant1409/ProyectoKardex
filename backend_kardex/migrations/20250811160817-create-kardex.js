@@ -123,6 +123,16 @@ module.exports = {
         onDelete: 'SET NULL'
         
       },
+            id_sede: {
+        type:Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'sede',
+          key: 'id_sede'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
 
       createdAt: {
         allowNull: false,

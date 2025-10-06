@@ -15,7 +15,6 @@ router.get("/", async (req, res) => {
         n.nombre AS nombre,
         k.fecha_recepcion,
         k.fecha_vencimiento,
-        k.cantidad,
         'REACTIVO' AS tipo
       FROM kardex k
       JOIN nombre_insumo n ON k.id_nombre_insumo = n.id_nombre_insumo
@@ -29,7 +28,6 @@ router.get("/", async (req, res) => {
         n.nombre AS nombre,
         i.fecha AS fecha,
         i.fecha_de_vto AS fecha_de_vto,
-        i.cantidad,
         'INSUMO' AS tipo
       FROM insumos i
       JOIN nombre_del_insumo n ON i.id_nombre_del_insumo = n.id_nombre_del_insumo

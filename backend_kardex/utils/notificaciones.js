@@ -7,25 +7,12 @@ async function crearNotificacion({ tipo, id_kardex = null, id_insumo = null, men
   const id_insumo_nn = id_insumo ?? 0;
   const fecha_evento_date = fecha_evento ? new Date(fecha_evento).toISOString().split('T')[0] : null;
 
-  const [result] = await pool.query(
-    `INSERT INTO notificaciones 
-      (tipo, id_kardex, id_insumo, mensaje, fecha_evento, creado_por, id_kardex_nn, id_insumo_nn, fecha_evento_date)
-     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
-     FROM DUAL
-     WHERE NOT EXISTS (
-       SELECT 1 FROM notificaciones
-       WHERE id_kardex_nn = ?
-         AND id_insumo_nn = ?
-         AND tipo = ?
-         AND fecha_evento_date = ?
-     ) LIMIT 1`,
-    [
-      tipo, id_kardex, id_insumo, mensaje, fecha_evento, creado_por,
-      id_kardex_nn, id_insumo_nn, fecha_evento_date,
-      id_kardex_nn, id_insumo_nn, tipo, fecha_evento_date
-    ]
-  );
-
+ const [result] = await pool.query(
+  `INSERT IGNORE INTO notificaciones 
+    (tipo, id_kardex, id_insumo, mensaje, fecha_evento, creado_por, id_kardex_nn, id_insumo_nn, fecha_evento_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [tipo, id_kardex, id_insumo, mensaje, fecha_evento, creado_por, id_kardex_nn, id_insumo_nn, fecha_evento_date]
+);
   return result.insertId ? result.insertId : null;
 }
 
@@ -56,13 +43,15 @@ async function generarNotificacionesAutomaticas() {
     return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
   }
 
-  const hoy = normalizarFecha(new Date());
+// Es hoy
+ const hoy = normalizarFecha(new Date());
+
+
 
   function esFechaValida(fecha) {
     const d = new Date(fecha);
     return !isNaN(d.getTime());
   }
-
   // 1️⃣ Vencimiento de kardex (reactivos)
   const [kardex] = await pool.query(`
     SELECT k.id_kardex, k.fecha_vencimiento, ni.nombre AS nombre_insumo, cc.nombre AS casa_comercial

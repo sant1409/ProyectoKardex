@@ -20,9 +20,8 @@ const transporte = nodemailer.createTransport({
 
 // registrar un usuario
 router.post('/registrarse', async (req, res) => {
-    const { correo, nombre, contraseña	 } = req.body;
-
-    if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
+    const { correo, nombre, contraseña, id_sede	 } = req.body;
+    if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo,)) {
         return res.status(400).json ({error: 'Correo invalido o faltante'});
     }
 
@@ -34,6 +33,9 @@ router.post('/registrarse', async (req, res) => {
         return res.status(400).json({error: 'La contraseña debe tener almenos 6 caracteres'});
     }
 
+    if (!id_sede) {
+        return res.status(400).json({error: 'La sede es obligatoria'});
+    }
 
     try {
        
@@ -52,8 +54,8 @@ router.post('/registrarse', async (req, res) => {
         });
 
         const [result] = await pool.query(
-            'INSERT INTO usuarios (correo, nombre, contraseña,  codigo_verificacion) VALUES (?, ?, ?, ?)',
-            [correo, nombre, contraseñaEncriptada,  codigo] 
+            'INSERT INTO usuarios (correo, nombre, contraseña, id_sede,  codigo_verificacion) VALUES (?, ?, ?, ?, ?)',
+            [correo, nombre, contraseñaEncriptada,  id_sede, codigo ] 
 
         );
 

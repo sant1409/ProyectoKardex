@@ -111,6 +111,11 @@ app.use("/inventario", inventarioRoutes);
  const notificacionesRoutes = require("./routes/notificaciones");
  app.use("/notificaciones", notificacionesRoutes);
 
+ //Ruta de las sedes
+ const sedeRoutes = require("./routes/sede");
+ app.use("/sede", sedeRoutes);
+
+
 const { generarNotificacionesAutomaticas, enviarNotificacionesPorCorreo } = require('./utils/notificaciones');
 
 // Esto programa la tarea para que corra todos los días a las 08:00 AM

@@ -5,12 +5,13 @@ const pool = require('../db');
 // Crear auditoría
 router.post('/', async (req, res) => {
     const {  entidad_afectada, id_entidad, accion, detalle_adicional, id_usuario, nombre_responsable } = req.body;
+      const id_sede = req.session.id_sede;
 
     try {
         const [result] = await pool.query(
             `INSERT INTO auditoria (
-                 entidad_afectada, id_entidad, accion, detalle_adicional , id_usuario, nombre_responsable) VALUES (?, ?, ?, ?, ?, ?)`,
-            [ entidad_afectada, id_entidad, accion, detalle_adicional, id_usuario, nombre_responsable]
+                 entidad_afectada, id_entidad, accion, detalle_adicional , id_usuario, nombre_responsable, id_sede) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [ entidad_afectada, id_entidad, accion, detalle_adicional, id_usuario, nombre_responsable, id_sede]
             
         );
         res.status(201).json({ message: 'Auditoría creada exitosamente!', id_auditoria: result.insertId });

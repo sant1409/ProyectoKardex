@@ -71,6 +71,16 @@ module.exports = {
         type: Sequelize.DATEONLY,
         allowNull: true,
       },
+            id_sede: {
+        type:Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'sede',
+          key: 'id_sede'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
     });
 
     // Índices
@@ -78,14 +88,13 @@ module.exports = {
     await queryInterface.addIndex('notificaciones', ['id_insumo']);
     await queryInterface.addIndex('notificaciones', ['leido']);
 
-    // 🆕 Índice único mejorado (tipo + id_kardex_nn + id_insumo_nn + fecha_evento_date)
+      // 🆕 Índice único mejorado (incluye mensaje)
     await queryInterface.addConstraint('notificaciones', {
-      fields: ['tipo', 'id_kardex_nn', 'id_insumo_nn', 'fecha_evento_date'],
+      fields: ['tipo', 'id_kardex_nn', 'id_insumo_nn', 'fecha_evento_date', 'mensaje'],
       type: 'unique',
-      name: 'uniq_notif_tipo_entidad_fecha',
+      name: 'uniq_notif_tipo_entidad_fecha_mensaje',
     });
   },
-
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('notificaciones');
   },
