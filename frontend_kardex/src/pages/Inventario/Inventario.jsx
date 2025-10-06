@@ -142,7 +142,6 @@ return (
                onClick={() => navigate(`/dashboard/insumos/${i.id}`)} // Redirige al detalle del insumo
             >
               <strong>{i.nombre}</strong>
-              <span>Cantidad: {i.cantidad}</span>
              <span>Fecha de recepcion: {formatearFecha (i.fecha)}</span>
 
             </div>
@@ -161,7 +160,6 @@ return (
               onClick={() => navigate(`/dashboard/kardex/${i.id}`)} // Redirige al detalle del reactivo
             >
               <strong>{i.nombre}</strong>
-              <span>Cantidad: {i.cantidad}</span>
               <span>Fecha de recepción: {formatearFecha(i.fecha_recepcion)}</span>
             </div>
           ))}

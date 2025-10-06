@@ -104,12 +104,26 @@
   border-color: #2980b9;
 }
 
+
 /* Header dentro de la tarjeta */
 .tirilla-header {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+
+.tirilla-buttons button {
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+
+.tirilla-buttons button:hover {
+  background-color: #06A9E5;
+}
+
 
 /* Modal de tirilla */
 .tirilla-modal {
@@ -180,4 +194,3 @@
   background-color: #606e73;
   transform: translateY(-1px);
 }
-

@@ -114,3 +114,35 @@
 .btn-volver:hover {
   background: #2980b9;
 }
+
+/* 🔹 Scroll para toda la vista del Kardex */
+.kardex-page {
+  height: 100vh;              /* ocupa toda la pantalla */
+  overflow-y: auto;           /* activa el scroll vertical */
+  overflow-x: hidden;         /* evita desplazamiento lateral */
+  padding: 20px;
+  box-sizing: border-box;
+
+  /* Scroll bonito */
+  scrollbar-width: thin;
+  scrollbar-color: #007bff #f1f1f1;
+}
+
+/* Para Chrome, Edge, Opera */
+.kardex-page::-webkit-scrollbar {
+  width: 10px;
+}
+
+.kardex-page::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.kardex-page::-webkit-scrollbar-thumb {
+  background-color: #007bff;
+  border-radius: 10px;
+}
+
+.kardex-page::-webkit-scrollbar-thumb:hover {
+  background-color: #0056b3;
+}

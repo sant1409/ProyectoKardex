@@ -76,3 +76,13 @@
 .landing-container .registrarse-container {
   margin-top: 0;
 }
+
+.registro-form select {
+  width: 625px;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #fff;
+}

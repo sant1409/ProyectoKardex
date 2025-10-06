@@ -3,7 +3,8 @@
 /* CONTENEDOR PRINCIPAL */
 .landing-container {
   display: flex;
-  min-height: 100vh;     /* ocupa toda la pantalla */
+  min-height: 100vh; 
+  overflow: hidden;
   align-items: stretch;  /* que ambas columnas ocupen la altura completa */
   padding: 0;
   margin: 0;
@@ -115,3 +116,11 @@
   font-size: 30px;
   margin: 0;
 }
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* ❌ Oculta la barra de scroll */
+  margin: 0;
+  padding: 0;
+}
+

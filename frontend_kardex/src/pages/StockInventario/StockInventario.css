@@ -1,11 +1,21 @@
 .stock-container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 30px auto;
   padding: 20px;
   background: #f9fafb; /* fondo clarito */
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  height: 80vh;              /* altura visible */
+  overflow-y: auto;          /* activa scroll vertical */
+  scrollbar-width: thin;     /* scroll fino (Firefox) */
+  scrollbar-color: #007bff #f1f1f1;
 }
+
+/* Estilo del scroll (para navegadores basados en WebKit) */
+.stock-container::-webkit-scrollbar {
+  width: 8px;
+}
+
 
 .stock-container h2 {
   text-align: center;

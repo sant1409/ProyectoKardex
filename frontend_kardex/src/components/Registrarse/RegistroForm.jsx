@@ -1,6 +1,6 @@
-import { useState } from "react";
-import './RegistroForm.css'
 
+import './RegistroForm.css';
+import { useState, useEffect } from "react";
 
 
 export default function Registro() {
@@ -8,14 +8,23 @@ export default function Registro() {
   const [correo, setCorreo] = useState("");
   const [nombre, setNombre] = useState("");
   const [contraseña, setContraseña] = useState("");
+  const [id_sede, setId_sede] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [paso, setPaso] = useState("registro"); // controla registro o verificación
   const [codigo, setCodigo] = useState(""); // código de verificación
+  const [sedes, setSedes] = useState([]);
+
+    useEffect(() => {
+    fetch("http://localhost:3000/sede")
+      .then(res => res.json())
+      .then(data => setSedes(data))
+      .catch(err => console.error(err));
+  }, []);
 
   const handleSubmitRegistro = async (e) => {
     e.preventDefault();
 
-    if (!correo || !nombre || !contraseña) {
+    if (!correo || !nombre || !contraseña || !id_sede) {
       setMensaje("Todos los campos son obligatorios");
       return;
     }
@@ -29,7 +38,7 @@ export default function Registro() {
       const res = await fetch("http://localhost:3000/usuarios/registrarse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, nombre, contraseña }),
+        body: JSON.stringify({ correo, nombre, contraseña, id_sede }),
           credentials: 'include'
       });
 
@@ -96,6 +105,16 @@ export default function Registro() {
             value={contraseña}
             onChange={(e) => setContraseña(e.target.value)}
           />
+
+           <select value={id_sede} onChange={e => setId_sede(e.target.value)}>
+              <option value="">Selecciona tu sede</option>
+              {sedes.map(sede => (
+                <option key={sede.id_sede} value={sede.id_sede}>
+                  {sede.nombre}
+                </option>
+              ))}
+            </select>
+
           {mensaje && <p className="mensaje">{mensaje}</p>}
           <button type="submit">Registrarse</button>
         </form>

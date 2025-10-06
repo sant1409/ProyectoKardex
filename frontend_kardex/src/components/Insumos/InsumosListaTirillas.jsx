@@ -201,4 +201,3 @@ const formatearFecha = (fechaISO) => {
   );
 
 }
-

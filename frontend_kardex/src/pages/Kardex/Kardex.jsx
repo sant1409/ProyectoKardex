@@ -102,7 +102,6 @@ useEffect(() => {
 
   return (
     <div className="kardex-page">
-      <div className="kardex-page">
         <div className="botones-top">
           {/* 🔹 Botón de volver */}
           <button className="btn-volver" onClick={handleVolver}>
@@ -117,7 +116,6 @@ useEffect(() => {
             Registrar nuevo Kardex
           </button>
         </div>
-      </div>
 
       {/* 🔹 Mini formulario */}
       {showMiniForm && (
