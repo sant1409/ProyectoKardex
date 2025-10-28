@@ -74,3 +74,16 @@
   margin-top: 0;
 }
 
+.olvidaste {
+    color: black;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.olvidaste:hover{
+    color:#080808;
+    text-decoration:underline;
+
+}

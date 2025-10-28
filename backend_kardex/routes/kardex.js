@@ -160,9 +160,6 @@ router.post('/',verificarToken, async (req, res) => {
     const idProveedor = await obtenerOcrearFK(pool, 'proveedor_k', 'proveedor_k', id_proveedor_k, id_sede);
     const idClasificacionRiesgo = await obtenerOcrearFK(pool, 'clasificacion_riesgo', 'clasificacion_riesgo', id_clasificacion_riesgo, id_sede);
 
-   
-    
-
     //  Insertar kardex
     const [result] = await pool.query(
       
@@ -764,19 +761,28 @@ router.get('/',verificarToken, async (req, res) => {
       }
     }
 
-    // 4) Eliminar registro del kardex
-    await pool.query('DELETE FROM kardex WHERE id_kardex = ? AND id_sede = ?', [id_kardex, id_sede]);
+   // 4) Registrar auditoría ANTES de eliminar el kardex
+const [casaRows] = await pool.query(
+  'SELECT nombre FROM casa_comercial WHERE id_casa_comercial = ? AND id_sede = ?',
+  [idCasa, id_sede]
+);
+const nombreCasa = casaRows.length ? casaRows[0].nombre : 'Sin casa comercial';
 
-    // 5) Auditoría
-    const [usuarioResult] = await pool.query(
-      'SELECT nombre FROM usuarios WHERE id_usuario = ? AND id_sede = ?',
-      [usuarioId, id_sede]
-    );
-    const nombreUsuario = usuarioResult.length ? usuarioResult[0].nombre : 'Desconocido';
 
-    await registrarAuditoria('kardex', id_kardex, 'eliminación', req.usuario);
+// ✅ Registrar auditoría con acción simple ("eliminó")
+await registrarAuditoria(
+  'kardex',
+  id_kardex,
+  'eliminó',
+  req.usuario
+);
 
-    res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
+
+// 5) Eliminar registro del kardex
+await pool.query('DELETE FROM kardex WHERE id_kardex = ? AND id_sede = ?', [id_kardex, id_sede]);
+
+
+res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({

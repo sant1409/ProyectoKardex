@@ -210,7 +210,6 @@ useEffect(() => {
 }, [preData]);
 
 
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -218,7 +217,6 @@ useEffect(() => {
   const makeHandler = (field) => (newValue) => {
     setFormData({ ...formData, [field]: newValue ? newValue.value : "" });
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -239,13 +237,11 @@ if (preData && preData.id_kardex) {
     }
   }
 
-
       // Preguntar confirmación al usuario
   const confirmado = window.confirm("¿Estás seguro de que los datos son correctos y quieres crear el registro?");
   if (!confirmado) {
     return; // si cancela, no se manda nada
   }
-  
     const datosFinales = {
       ...formData,
       lab_sas: valorLabSas,
@@ -280,7 +276,6 @@ if (preData && preData.id_kardex) {
       const data = await res.json();
       console.log("📥 Respuesta completa del backend:", data);
 
-
       if (!res.ok) {
         console.error("Error del backend:", data);
         setMensaje("Error al enviar: " + (data.error || JSON.stringify(data)));
@@ -307,7 +302,6 @@ const tirilla = {
 if (typeof onNuevoRegistro === "function") {
   onNuevoRegistro(tirilla);
 }
-
       setFormData({
         fecha_recepcion: "",
         temperatura_llegada: "",

@@ -160,7 +160,7 @@ export default function IniciarSesionForm() {
             />
 
             <p
-              style={{ color: "blue", cursor: "pointer" }}
+              className="olvidaste"
               onClick={() => setPaso("correo")}
             >
               ¿Olvidaste tu contraseña?

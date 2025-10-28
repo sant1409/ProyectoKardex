@@ -761,27 +761,26 @@ router.delete('/:id_insumo', verificarToken, async (req, res) => {
       }
     }
 
-    // 4) Eliminar insumo
-    await pool.query('DELETE FROM insumos WHERE id_insumo = ? AND id_sede = ?', [id_insumo, id_sede]);
+   // 4) Registrar auditoría ANTES de eliminar el kardex
+const [laboRows] = await pool.query(
+  'SELECT nombre FROM laboratorio WHERE id_laboratorio = ? AND id_sede = ?',
+  [idLab, id_sede]
+);
+const oldNombreCleanb = laboRows.length ? laboRows[0].nombre : 'Sin laboratorio';
 
-    // 5) Auditoría
-    const [usuarioResult] = await pool.query(
-      'SELECT nombre FROM usuarios WHERE id_usuario = ? AND id_sede = ?',
-      [usuarioId, id_sede]
-    );
-    const nombreUsuario = usuarioResult.length ? usuarioResult[0].nombre : 'Desconocido';
 
-    await registrarAuditoria(
-      'insumos',
-      id_insumo,
-      'eliminación',
-      `Se eliminó el insumo con ID ${id_insumo}`,
-      usuarioId,
-      nombreUsuario,
-      id_sede
-    );
+// ✅ Registrar auditoría con acción simple ("eliminó")
+await registrarAuditoria(
+  'insumos',
+  id_insumo,
+  'eliminó',
+  req.usuario
+);
 
-    res.status(202).json({ success: true, message: 'Insumo eliminado correctamente y stock ajustado.' });
+// 5) Eliminar registro del kardex
+await pool.query('DELETE FROM insumos WHERE id_insumo = ? AND id_sede = ?', [id_insumo, id_sede]);
+
+res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -793,6 +792,7 @@ router.delete('/:id_insumo', verificarToken, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 

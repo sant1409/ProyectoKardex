@@ -84,6 +84,7 @@ const [proveedoresK, setProveedoresK] = useState([]);
   const [opcionLimpieza, setOpcionLimpieza] = useState("tres_meses");
   const [limpiando, setLimpiando] = useState(false);
   const [auditoria, setAuditoria] = useState([]);
+  
 
   const navigate = useNavigate();
   const handleVolver = () => navigate(-1);
@@ -117,6 +118,7 @@ const [proveedoresK, setProveedoresK] = useState([]);
       setCargando(false);
     }
   };
+  
 
   // === CRUD Categorías ===
   const obtenerCategorias = async () => {
