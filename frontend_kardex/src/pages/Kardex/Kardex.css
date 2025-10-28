@@ -25,7 +25,7 @@
 
 /* Botón de búsqueda */
 .buscar-kardex button {
-  background-color: #28a745;
+  background-color: #080808;
   color: white;
   border: none;
   padding: 10px 16px;
@@ -36,7 +36,7 @@
 }
 
 .buscar-kardex button:hover {
-  background-color: #218838;
+    background-color: #0f72ce; 
 }
 
 /* Responsive */
@@ -53,7 +53,7 @@
   }
 }
 
-/* 🔹 Contenedor de botones superior (volver y registrar) */
+
 .botones-top {
   display: flex;
   gap: 12px; /* espacio entre botones */
@@ -66,7 +66,7 @@
 .btn-registrar,
 .btn-confirmar,
 .btn-exportar {
-  background-color: #007bff;
+ 
   color: white;
   border: none;
   border-radius: 6px;
@@ -76,9 +76,11 @@
 }
 
 .btn-registrar:hover,
-.btn-confirmar:hover {
-  background-color: #0056b3;
+.btn-confirmar:hover,
+.btn-exportar:hover{
+   background-color: #0f72ce; 
 }
+
 
 /* 🔹 Mini form */
 .form-mini
@@ -101,19 +103,6 @@
   min-width: 120px; /* evita inputs muy pequeños */
 }
 
-/* 🔹 Botón volver */
-.btn-volver {
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn-volver:hover {
-  background: #2980b9;
-}
 
 /* 🔹 Scroll para toda la vista del Kardex */
 .kardex-page {
@@ -122,10 +111,8 @@
   overflow-x: hidden;         /* evita desplazamiento lateral */
   padding: 20px;
   box-sizing: border-box;
-
-  /* Scroll bonito */
   scrollbar-width: thin;
-  scrollbar-color: #007bff #f1f1f1;
+  scrollbar-color: #000000 #f1f1f1;
 }
 
 /* Para Chrome, Edge, Opera */
@@ -139,10 +126,11 @@
 }
 
 .kardex-page::-webkit-scrollbar-thumb {
-  background-color: #007bff;
+  background-color: #000000;
   border-radius: 10px;
 }
 
 .kardex-page::-webkit-scrollbar-thumb:hover {
-  background-color: #0056b3;
+  background-color: #000000;
 }
+

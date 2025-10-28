@@ -1,9 +1,26 @@
+/**
+ * 🧭 Dashboard.jsx
+ * 
+ * Componente principal del panel del sistema Kardex.
+ * Verifica la sesión del usuario, maneja la navegación interna
+ * y muestra el menú lateral con acceso a:
+ *  - Perfil del usuario
+ *  - Notificaciones
+ *  - Links de casas comerciales
+ *  - Panel de administración
+ * 
+ * Usa <Outlet /> para renderizar las rutas hijas (Kardex, Insumos, etc.)
+ * y permite cerrar sesión eliminando el token y redirigiendo al login.
+ */
+
+
 import { useNavigate, Outlet } from "react-router-dom";
 import './Dashboard.css';
 import { useState, useEffect } from 'react';
 import Perfil from "../../pages/Perfil/Perfil";
 import HomeDashboard from "../../components/Dashboard/HomeDashboard";
 import Notificaciones from "../Notificaciones/Notificaciones";
+ import Links from "../Links/Links";
 
 
 export default function Dashboard() {
@@ -11,20 +28,22 @@ export default function Dashboard() {
   const [usuario, setUsuario] = useState(null);
   const [perfilAbierto, setPerfilAbierto] = useState(false);
   const [notiAbierta, setNotiAbierta] = useState(false);
+  const [linkAbierto, setLinkAbierto] = useState(false);
 
-
-   useEffect(() => {
+  useEffect(() => {
     const verificarSesion = async () => {
       try {
         const res = await fetch("http://localhost:3000/usuarios/sesion", {
           method: "GET",
-          credentials: "include",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
         });
 
         const data = await res.json();
         if (res.ok) {
           console.log("✅ Sesión activa:", data.usuario);
-          setUsuario(data.usuario);  // 👈 ahora sí existe
+          setUsuario(data.usuario);
         } else {
           console.log("⚠️ No hay sesión activa");
           navigate("/iniciar-sesion");
@@ -38,15 +57,14 @@ export default function Dashboard() {
     verificarSesion();
   }, [navigate]);
 
-
-
   const handleLogout = () => {
-    localStorage.removeItem("auth");
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("id_sede");
     navigate("/iniciar-sesion");
   };
 
   return (
-    
     <div className="Dashboard-container"> 
       <aside className="Dashboard">
         <h2>Menú</h2>
@@ -72,37 +90,55 @@ export default function Dashboard() {
           <button 
             className="btn-notificaciones" 
             onClick={() => {      
-              setNotiAbierta(prev => {
-                console.log('toggle notiAbierta ->', !prev);
-                return !prev;
-              });
+              setNotiAbierta(prev => !prev);
             }}
           >
             📩 Notificaciones
           </button>
 
+         <button 
+             className="btn-links" 
+             onClick={() => {setLinkAbierto(prev => !prev);
+             }}
+          >
+             🌐 Links casas comerciales
+            </button>
+
           <li>
-            <button onClick={handleLogout} className="logout-button">
-              Cerrar sesión
+            <button 
+              className="admin-button"
+              onClick={() => navigate("/dashboard/admin")}
+            >
+              🛠️ Administrador
             </button>
           </li>
+          
         </ul>
+
+        {/* 👇 Botón de logout FUERA del ul, así se puede anclar abajo */}
+        <button onClick={handleLogout} className="logout-button">
+          Cerrar sesión
+        </button>
       </aside>
 
       <main className="main-content">
-        {/* 👇 Si no hay nada en Outlet, mostramos el HomeDashboard */}
         <Outlet />
       </main>
 
-      {/* 📨 Contenedor flotante de notificaciones */}
       {notiAbierta && (
         <div className="notificaciones-panel">
           <button className="cerrar-panel" onClick={() => setNotiAbierta(false)}>✖</button>
-          {/* Cada notificación tendrá su propio div dentro de Notificaciones */}
           <Notificaciones />
         </div>
       )}
+      
+      {linkAbierto && (
+         <div className="links-panel">
+          <button className="cerrar-panel" onClick={() => setLinkAbierto(false)}>✖</button>
+           <Links />
+      </div>
+      )}
+
     </div>
   );
 }
-

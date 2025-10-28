@@ -1,81 +1,76 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db"); // tu conexión MySQL
+const pool = require("../db");
+const { verificarToken } = require("../middlewares/auth");
 
-
-// 🔹 Obtener inventario completo, con filtros opcionales
-router.get("/", async (req, res) => {
+// 🔹 Obtener inventario completo filtrado por sede
+router.get("/", verificarToken, async (req, res) => {
   try {
     const { tipo, nombre, mes } = req.query;
+    const id_sede = req.usuario.id_sede; // viene del token ✅
 
-    // 🔹 Consulta Reactivos (kardex JOIN nombre_insumo)
+    // --- CONSULTA KARDEX (REACTIVOS) ---
     let queryKardex = `
       SELECT 
         k.id_nombre_insumo AS id,
         n.nombre AS nombre,
         k.fecha_recepcion,
         k.fecha_vencimiento,
+        k.cantidad AS cantidad,
+        k.fecha_terminacion AS fecha_terminacion,
         'REACTIVO' AS tipo
       FROM kardex k
       JOIN nombre_insumo n ON k.id_nombre_insumo = n.id_nombre_insumo
-      WHERE 1=1
+      WHERE k.id_sede = ?
     `;
 
-    // 🔹 Consulta Insumos (insumos JOIN nombre_del_insumo)
+    // --- CONSULTA INSUMOS ---
     let queryInsumos = `
       SELECT 
         i.id_nombre_del_insumo AS id,
         n.nombre AS nombre,
         i.fecha AS fecha,
         i.fecha_de_vto AS fecha_de_vto,
+        i.cantidad AS cantidad,
+        i.termino AS termino,
         'INSUMO' AS tipo
       FROM insumos i
       JOIN nombre_del_insumo n ON i.id_nombre_del_insumo = n.id_nombre_del_insumo
-      WHERE 1=1
+      WHERE i.id_sede = ?
     `;
 
-    const paramsKardex = [];
-    const paramsInsumos = [];
+    const paramsKardex = [id_sede];
+    const paramsInsumos = [id_sede];
 
-    // 🔹 Filtro por tipo
+    // --- Filtros dinámicos ---
     if (tipo) {
-      if (tipo.toUpperCase() === "INSUMO") {
-        queryKardex += " AND 0"; // no trae nada
-      } else if (tipo.toUpperCase() === "REACTIVO") {
-        queryInsumos += " AND 0"; // no trae nada
-      }
+      if (tipo.toUpperCase() === "INSUMO") queryKardex += " AND 0";
+      if (tipo.toUpperCase() === "REACTIVO") queryInsumos += " AND 0";
     }
 
-    // 🔹 Filtro por nombre
     if (nombre) {
-      queryKardex += ` AND n.nombre LIKE ?`;
+      queryKardex += " AND n.nombre LIKE ?";
+      queryInsumos += " AND n.nombre LIKE ?";
       paramsKardex.push(`%${nombre}%`);
-
-      queryInsumos += ` AND n.nombre LIKE ?`;
       paramsInsumos.push(`%${nombre}%`);
     }
 
-    // 🔹 Filtro por mes
     if (mes) {
-      queryKardex += ` AND MONTH(k.fecha_recepcion) = ?`;
+      queryKardex += " AND MONTH(k.fecha_recepcion) = ?";
+      queryInsumos += " AND MONTH(i.fecha) = ?";
       paramsKardex.push(mes);
-
-      queryInsumos += ` AND MONTH(i.fecha) = ?`;
       paramsInsumos.push(mes);
     }
 
-    // 🔹 Ejecutar consultas
+    // --- Ejecutar consultas ---
     const [rowsKardex] = await pool.query(queryKardex, paramsKardex);
     const [rowsInsumos] = await pool.query(queryInsumos, paramsInsumos);
 
-    // 🔹 Combinar resultados
-    const inventario = [...rowsKardex, ...rowsInsumos];
-
-    res.json(inventario);
+    res.json([...rowsKardex, ...rowsInsumos]);
   } catch (error) {
-    console.error("Error al obtener inventario:", error);
+    console.error("❌ Error al obtener inventario:", error);
     res.status(500).json({ error: "Error al obtener inventario" });
   }
 });
 
-module.exports = router;
+module.exports= router;

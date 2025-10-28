@@ -1,6 +1,20 @@
+/**
+ * 📘 KardexListaTirillas.jsx
+ *
+ * Lista visual de registros del Kardex asociados a una sede específica.
+ *
+ * 🔹 Funcionalidad:
+ *  - Muestra tarjetas con información resumida de cada tirilla (insumo).
+ *  - Filtra los registros según la sede almacenada en localStorage.
+ *  - Permite actualizar, eliminar o ver el detalle completo de un registro.
+ *  - Resalta el estado del insumo según su fecha de vencimiento (rojo, amarillo, verde).
+ *  - Genera reportes PDF individuales con `@react-pdf/renderer`.
+ **/
 
 import { useState, useEffect  } from "react";
 import "./Kardex.css";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import ReporteReactivo from "../../exportar/ReporteReactivo";
 
 export default function KardexListaTirillas({ tirillas = [], 
   onActualizarTirilla = () => {}, 
@@ -8,13 +22,33 @@ export default function KardexListaTirillas({ tirillas = [],
   initialSelectedId = null, }) {
   const [tirillaSeleccionada, setTirillaSeleccionada] = useState(null);
 
+   //Verificar sede en sesion
+   const idSede = localStorage.getItem("id_sede");
+      if (!idSede) {
+          console.warn("No hay id_sede en localStorage");}
+
+    const tirillasFiltradas = tirillas.filter(t => String(t.detalle?.id_sede) === idSede);
+
+    function BotonDescargarPDF({ detalle }) {
+  return (
+    <PDFDownloadLink
+      document={<ReporteReactivo reactivo={detalle} />}
+
+      
+      fileName={`Reporte_${detalle.nombre_insumo || "reactivo"}.pdf`}
+    >
+      {({ loading }) => (loading ? "Generando PDF..." : "Descargar PDF")}
+    </PDFDownloadLink>
+  );
+}
+
    useEffect(() => {
-    if (!initialSelectedId || !tirillas?.length) return;
-    const found = tirillas.find(
+    if (!initialSelectedId || !tirillasFiltradas?.length) return;
+    const found = tirillasFiltradas.find(
       t => String(t.detalle?.id_kardex) === String(initialSelectedId)
     );
     if (found) setTirillaSeleccionada(found);
-  }, [initialSelectedId, tirillas]);
+  }, [initialSelectedId, tirillasFiltradas]);
 
   // 🔹 Campos que queremos mostrar en el detalle del modal
   const camposVisibles = [
@@ -24,11 +58,9 @@ export default function KardexListaTirillas({ tirillas = [],
     "estado_revision", "temperatura_almacenamiento", "clasificacion_riesgo",
     "principio_activo", "forma_farmaceutica", "concentracion", "unidad_medida",
     "fecha_salida", "fecha_inicio", "fecha_terminacion", "area", "factura",
-    "costo_general", "costo_caja", "costo_prueba", "iva", "consumible"
+    "costo_general", "costo_caja", "costo_prueba", "iva", "consumible", "link_casa"
 
   ];
-
-
 
 function obtenerColorVencimiento(fecha_vencimiento) {
   if (!fecha_vencimiento) return "white"; // sin fecha -> blanco
@@ -54,8 +86,6 @@ function obtenerColorVencimiento(fecha_vencimiento) {
   }
 }
 
-
-
   // Función para mostrar la fecha en formato 'YYYY-MM-DD'
 const formatearFecha = (fechaISO) => {
   if (!fechaISO) return "-";
@@ -65,9 +95,10 @@ return (
   <div className="tirillas-container">
     <h2>Lista de Kardex Registrados</h2>
 
-    {tirillas.length > 0 ? (
+    {tirillasFiltradas.length > 0 ? (
       <div className="tirillas-grid">
-        {tirillas.map((t) => {
+        {tirillasFiltradas.map((t, index) => {
+          
           // 🔹 Aquí sí puedes usar lógica normal
           const hoy = new Date().toISOString().split("T")[0]; // fecha de hoy
           const fechaTerminacion = t.detalle?.fecha_terminacion
@@ -78,7 +109,7 @@ return (
 
           return (
             <div
-              key={t.detalle?.id_kardex || t.detalle?.lote || Math.random()} // 🔹 clave única
+              key={t.detalle?.id_kardex || t.detalle?.lote || index} // 🔹 clave única
               className="tirilla-card"
               onClick={() => setTirillaSeleccionada(t)}
               style={{
@@ -189,8 +220,9 @@ return (
                     <strong>{key.replaceAll("_", " ")}:</strong> {displayValue}
                   </p>
                 );
-              }
-            )}
+              })}
+                   {/* 🔹 Aquí agregamos el botón de descargar PDF */}
+        <BotonDescargarPDF detalle={tirillaSeleccionada.detalle} />
           </div>
         </div>
       </div>
@@ -198,3 +230,4 @@ return (
   </div>
 );
   }
+

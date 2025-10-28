@@ -1,3 +1,4 @@
+//Prmite ver el diseño de la imagen y la separacion de la imagen al inicio de sesion y registro 
 import '../pages/Landing/Landing.css';
 
 export default function AuthLayout({ children }) {

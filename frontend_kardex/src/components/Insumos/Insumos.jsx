@@ -1,3 +1,13 @@
+/**
+ * 📦 Insumos.jsx
+ * 
+ * Formulario para registrar o editar insumos.
+ * Carga datos desde la API (insumos, laboratorios, proveedores, etc.),
+ * permite crear nuevos registros o actualizar existentes,
+ * y envía los datos al backend con autenticación por token.
+ */
+
+
 import { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import "./Insumos.css";
@@ -59,10 +69,16 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
   ];
 
   useEffect(() => {
-  const cargarDatos = async () => {
+  const cargarDatos = async () => {  
     try {
+      const idSede = localStorage.getItem("id_sede");
+      const token = localStorage.getItem("token");
       // 🔹 Insumos
-      const insumosRes = await fetch("http://localhost:3000/nombre_del_insumo");
+      const insumosRes = await fetch(`http://localhost:3000/nombre_del_insumo?id_sede=${idSede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const insumosData = await insumosRes.json();
       const insumosOpciones = insumosData.map(item => ({
         value: item.id_nombre_del_insumo,
@@ -72,7 +88,11 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
       console.log("Insumos cargados:", insumosOpciones);
 
       // 🔹 Presentaciones
-      const presentacionesRes = await fetch("http://localhost:3000/presentacion");
+       const presentacionesRes = await fetch(`http://localhost:3000/presentacion?id_sede=${idSede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const presentacionesData = await presentacionesRes.json();
       const presentacionesOpciones = presentacionesData.map(item => ({
         value: item.id_presentacion,
@@ -81,7 +101,11 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
       setPresentaciones(presentacionesOpciones);
 
       // 🔹 Laboratorios
-      const labsRes = await fetch("http://localhost:3000/laboratorio");
+       const labsRes = await fetch(`http://localhost:3000/laboratorio?id_sede=${idSede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const labsData = await labsRes.json();
       const labsOpciones = labsData.map(item => ({
         value: item.id_laboratorio,
@@ -90,7 +114,11 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
       setLaboratorios(labsOpciones);
 
       // 🔹 Proveedores
-      const proveedoresRes = await fetch("http://localhost:3000/proveedor");
+      const proveedoresRes = await fetch(`http://localhost:3000/proveedor?id_sede=${idSede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const proveedoresData = await proveedoresRes.json();
       const proveedoresOpciones = proveedoresData.map(item => ({
         value: item.id_proveedor,
@@ -99,7 +127,11 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
       setProveedores(proveedoresOpciones);
 
       // 🔹 Clasificaciones
-      const clasificacionesRes = await fetch("http://localhost:3000/clasificacion");
+        const clasificacionesRes = await fetch(`http://localhost:3000/clasificacion?id_sede=${idSede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const clasificacionesData = await clasificacionesRes.json();
       const clasificacionesOpciones = clasificacionesData.map(item => ({
         value: item.id_clasificacion,
@@ -108,7 +140,11 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
       setClasificaciones(clasificacionesOpciones);
 
       // 🔹 Categorías
-      const categoriasRes = await fetch("http://localhost:3000/categoria");
+      const categoriasRes = await fetch(`http://localhost:3000/categoria?id_sede=${idSede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const categoriasData = await categoriasRes.json();
       const categoriasOpciones = categoriasData.map(item => ({
         value: item.id_categoria,
@@ -177,11 +213,11 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
     setFormData({ ...formData, [field]: newValue ? newValue.value : "" });
   };
 
-  const idUsuarioLogueado = localStorage.getItem("usuarioId");
-
   const handleSubmit = async (e) => {
      e.preventDefault();
 
+    const idUsuarioLogueado = localStorage.getItem("usuarioId");
+    const idSede = localStorage.getItem("id_sede")
 
      if (preData && preData.id_insumo) {
     const oldLab = String(preData.id_laboratorio ?? "");
@@ -195,8 +231,6 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
     }
   }
 
-
-
        // Preguntar confirmación al usuario
   const confirmado = window.confirm("¿Estás seguro de que los datos son correctos y quieres crear el registro?");
   if (!confirmado) {
@@ -205,13 +239,12 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
 
    const idCat = formData.id_categoria || preData?.categoria || null;
    const nombreCat = categorias.find(c => c.value === idCat)?.label || "";
-    
-
-    const datosFinales = {
+   const datosFinales = {
       ...formData,
       id_categoria: idCat,
       mes_registro: valorMesRegistro,
       usuarioId: idUsuarioLogueado,
+      id_sede: idSede, 
       id_nombre_del_insumo: formData.id_nombre_del_insumo,
       id_presentacion: formData.id_presentacion,
       id_laboratorio: formData.id_laboratorio,
@@ -225,14 +258,16 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
         ? `http://localhost:3000/insumos/${preData.id_insumo}`
         : "http://localhost:3000/insumos";
       const metodo = preData && preData.id_insumo ? "PUT" : "POST";
-
+         
       const res = await fetch(url, {
         method: metodo,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datosFinales),
-        credentials: 'include'
-      });
-
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+         body: JSON.stringify(datosFinales)
+});
+        
       const data = await res.json();
       console.log("Respuesta completa del backend:", data);
 
@@ -297,7 +332,6 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
       setMensaje("Ocurrió un error inesperado al enviar el formulario.");
     }
   };
-
 
 
   return (
@@ -377,18 +411,30 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
                   }
                 />
               ) : key === "id_clasificacion" ? (
+                   <>
                   <CreatableSelect
-                    isClearable
-                    options={clasificaciones}
-                    onChange={makeHandler("id_clasificacion")}
-                    placeholder="Escribe o selecciona una clasificación"
-                    value={
-                      formData.id_clasificacion
-                        ? clasificaciones.find(i => i.value === formData.id_clasificacion) ||
-                          { value: formData.id_clasificacion, label: formData.id_clasificacion }
-                        : null
-                    }
-                  />
+                     isClearable
+                     options={clasificaciones}
+                     onChange={makeHandler("id_clasificacion")}
+                     placeholder="Escribe o selecciona una clasificación"
+                     value={
+                   formData.id_clasificacion
+                   ? clasificaciones.find(i => i.value === formData.id_clasificacion) ||
+                   { value: formData.id_clasificacion, label: formData.id_clasificacion }
+                      : null
+                  }
+
+                />
+                    {/* 🔗 Enlace debajo del select */}
+                    <a
+                     href="https://www.invima.gov.co/riesgos"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                  >
+                     Ver clasificación de riesgo en INVIMA
+                     </a>
+                </>
+                  
                   ) : key === "id_categoria" ? (
                     <>
                   <CreatableSelect
@@ -403,13 +449,6 @@ export default function Insumos({ preData, onBack, onNuevoRegistro }) {
                               : null
                                }
                     />
-                  <a
-                    href="https://www.invima.gov.co/riesgos"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Ver clasificación de riesgo en INVIMA
-                  </a>
                 </>
               ) : key === "expediente_invima" ? (
                 <>

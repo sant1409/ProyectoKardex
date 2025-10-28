@@ -1,5 +1,5 @@
 .stock-container {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 30px auto;
   padding: 20px;
   background: #f9fafb; /* fondo clarito */
@@ -8,14 +8,13 @@
   height: 80vh;              /* altura visible */
   overflow-y: auto;          /* activa scroll vertical */
   scrollbar-width: thin;     /* scroll fino (Firefox) */
-  scrollbar-color: #007bff #f1f1f1;
+  scrollbar-color: #000000 #f1f1f1;
 }
 
 /* Estilo del scroll (para navegadores basados en WebKit) */
 .stock-container::-webkit-scrollbar {
   width: 8px;
 }
-
 
 .stock-container h2 {
   text-align: center;
@@ -29,7 +28,7 @@
   margin-bottom: 10px;
   font-size: 20px;
   color: #0f172a;
-  border-left: 4px solid #2563eb; /* azul pro */
+  border-left: 4px solid #2563eb; 
   padding-left: 8px;
 }
 
@@ -41,7 +40,8 @@ table {
 }
 
 thead {
-  background-color: #2563eb;
+      background-color: #080808;
+
   color: white;
 }
 
@@ -107,7 +107,7 @@ td {
 }
 
 .stock-filtros button {
-  background-color: #007bff;
+  background-color: #080808;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -115,6 +115,6 @@ td {
 }
 
 .stock-filtros button:hover {
-  background-color: #0056b3;
+ background-color: #0f72ce;
 }
 

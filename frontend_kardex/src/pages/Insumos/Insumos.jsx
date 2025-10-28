@@ -1,10 +1,20 @@
+/**
+ * 📄 InsumosPage.jsx
+ * Página principal para la gestión de insumos.
+ * Permite:
+ * - Registrar nuevos insumos (con selección de mes y categoría).
+ * - Buscar insumos por nombre, laboratorio, lote o fecha.
+ * - Exportar registros filtrados a Excel.
+ * - Editar o eliminar insumos existentes.
+ * - Cargar automáticamente las categorías e insumos desde la API.
+ */
+
 import { useState, useEffect } from "react";
 import Insumos from "../../components/Insumos/Insumos";
 import InsumosListaTirillas from "../../components/Insumos/InsumosListaTirillas";
 import './Insumos.css';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { exportarInsumos } from "../../exportar/ExportarInsumos";
-
 
 export default function InsumosPage() {
   // 🔹 Estados principales
@@ -24,19 +34,34 @@ export default function InsumosPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const openId = searchParams.get("open"); // puede ser null
+
+  //  Año actual y lista de años dinámicos (desde año actual hasta 3000)
+  const anioActual = new Date().getFullYear(); 
+  const años = Array.from({ length: 3000 - anioActual + 1 }, (_, i) => anioActual + i); 
+  
+  //Estado para el año seleccionado (inicial = año actual)
+  const [anioSeleccionado, setAnioSeleccionado] = useState(String(anioActual)); 
+
+  
+
   const handleVolver = () => {
   navigate(-1); // esto hace que vaya a la página anterior en la historia
 };
-
+   const idSede = localStorage.getItem("id_sede");
+   const token = localStorage.getItem("token"); 
 
   // 🔹 Carga inicial de categorías
   useEffect(() => {
     const cargarCategorias = async () => {
       try {
-        const res = await fetch("http://localhost:3000/categoria");
+
+        const res = await fetch(`http://localhost:3000/categoria?id_sede=${idSede}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+         });
         const data = await res.json();
         const opciones = data.map(cat => ({ id_categoria: cat.id_categoria, nombre: cat.categoria }));
         setCategorias(opciones);
+        
       } catch (error) {
         console.error("Error cargando categorías:", error);
       }
@@ -48,7 +73,12 @@ export default function InsumosPage() {
   useEffect(() => {
     const cargarTirillas = async () => {
       try {
-        const res = await fetch("http://localhost:3000/insumos");
+
+        const res = await fetch(`http://localhost:3000/insumos?id_sede=${idSede}`,{
+          headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
         const data = await res.json();
         const tirillasCargadas = data.map(r => ({
           fecha: r.fecha,
@@ -103,7 +133,11 @@ export default function InsumosPage() {
     if (hasta) params.append("hasta", hasta);
 
     try {
-      const res = await fetch(`http://localhost:3000/insumos/buscar_insumos?${params.toString()}`);
+      const res = await fetch(`http://localhost:3000/insumos/buscar_insumos?${params.toString()}`,{
+          headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       const tirillasCargadas = data.map(r => ({
         fecha: r.fecha,
@@ -119,8 +153,7 @@ export default function InsumosPage() {
     }
   };
 
-  return (
-    
+  return (   
     
     <div className="insumos-page">
       {/* 🔹 Botón de volver */}
@@ -129,12 +162,10 @@ export default function InsumosPage() {
       ← Volver
     </button>
     
-
       <button className="btn-registrar" onClick={() => setShowMiniForm(!showMiniForm)} >
         Registrar nuevo Insumo
       </button>
       </div>
-
 
       {showMiniForm && (
         <div className="form-mini">
@@ -207,17 +238,23 @@ export default function InsumosPage() {
                 <option value="Diciembre">Diciembre</option>
               {/* ...los demás meses */}
             </select>
-      
-            <button
-            className="btn-exportar"
-        onClick={() => exportarInsumos(tirillas, categoriaSeleccionada, mes)}
-       disabled={!categoriaSeleccionada || !mes}
-         >
-        Exportar
-      </button>
+
+            <select value={anioSeleccionado} onChange={e => setAnioSeleccionado(e.target.value)}>
+             {años.map(a => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+              </select>
+
+          <button
+               className="btn-exportar"
+              onClick={() => exportarInsumos(tirillas, categoriaSeleccionada, mes, anioSeleccionado)}
+               disabled={!categoriaSeleccionada || !mes || !anioSeleccionado}
+
+                 >
+               Exportar
+               </button>
          </div>
-         
-      
+              
       <InsumosListaTirillas
         tirillas={tirillas}
           initialSelectedId={openId}
@@ -233,13 +270,12 @@ export default function InsumosPage() {
           if (!window.confirm("¿Seguro que quieres eliminar este insumo?")) return;
 
           try {
-                   
-          
-       
             const res = await fetch(`http://localhost:3000/insumos/${tirilla.detalle.id_insumo}`, {
               method: "DELETE",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ usuarioId: localStorage.getItem("usuarioId") 
+               headers: { 
+                       "Content-Type": "application/json",
+                       "Authorization": `Bearer ${token}`},
+               body: JSON.stringify({ usuarioId: localStorage.getItem("usuarioId") 
                 
               })
             });

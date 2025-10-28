@@ -79,7 +79,7 @@
 }
 
 .insumos-button button {
-  background-color: #27ae60;
+  background-color: #080808;
   color: white;
   font-size: 16px;
   padding: 12px 30px;
@@ -91,7 +91,7 @@
 }
 
 .insumos-button button:hover {
-  background-color: #219150;
+      background-color: #0f72ce; 
 }
 
 /* Mensaje */
@@ -140,7 +140,7 @@
 }
 
 .tirilla-buttons button {
-  background-color: #007BFF;
+  background-color: #080808;
   color: #fff;
   border: none;
   border-radius: 3px;
@@ -148,7 +148,7 @@
 }
 
 .tirilla-buttons button:hover {
-  background-color: #06A9E5;
+  background-color: #0f72ce; 
 }
 
 
@@ -200,7 +200,7 @@
 
 /* Estilo del botón cerrar */
 .btn-cerrar button {
-  background-color: #7f8c8d;  /* gris oscuro */
+  background-color: #080808;
   color: #fff;
   font-size: 16px;
   padding: 10px 20px;
@@ -213,6 +213,7 @@
 
 /* Hover */
 .btn-cerrar button:hover {
-  background-color: #606e73;
+  background-color: #0f72ce; 
   transform: translateY(-1px);
 }
+

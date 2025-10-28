@@ -3,8 +3,8 @@
 
 ## carpetas para el proyecto
 ```
-backend_kardex  = JavaScript - express - node.js
-frontend_kardex = React + vite
+backend_kardex  = JavaScript - express - node.js - sequelize
+frontend_kardex = React + vite + html + css
 ```
 ## Comandos del sistema - backend
 ```
@@ -24,6 +24,7 @@ npm install sequelize = Es una ORM , que permite interactuar con la base de dato
 npm install --save-dev sequelize-cli = Es la herramienta de línea de comandos para trabajar con Sequelize.
 npm install nodemailer  permite enviar codigos de verificacion al registrarse
 npm install node-cron
+npm install jsonwebtoken - token
 ___________________
 Crear migraciones a la base de datos desde el backend
 npx sequelize-cli migration:generate --name create-nombre_entidad
@@ -45,6 +46,7 @@ npm install react-dom
 npm install react-router-dom
 npm install react-select
 npm install xlsx file-saver  = sirve para exportar a excel
+npm install @react-pdf/renderer = sirve para descargar pdf
 
 ```
 ## Pasos para migrar el proyecto para un repositorio en git hub

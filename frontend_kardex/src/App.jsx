@@ -10,7 +10,7 @@ import Kardex from "./pages/Kardex/Kardex";
 import Insumos from "./pages/Insumos/Insumos";
 import Inventario from"./pages/Inventario/Inventario";
 import StockInventario from "./pages/StockInventario/StockInventario"
-
+import Admin from "./pages/Admin/Admin";
 
 
 import "./App.css";
@@ -31,6 +31,7 @@ function App() {
           <Route path="kardex/:id" element={<Kardex />} />
           <Route path="insumos/:id" element={<Insumos />} />
           <Route path="stockinventario" element={<StockInventario />} />
+           <Route path="admin" element={<Admin />} />
         </Route>
       </Routes>
     </BrowserRouter>

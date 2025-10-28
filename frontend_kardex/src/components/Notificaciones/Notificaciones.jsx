@@ -1,12 +1,23 @@
+//Vista de las notificaciones, el ccs de este esta junto con el dashboard osea en dashboradcss
+
 import { useState, useEffect } from "react";
 
 export default function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔐 Traer token e id_sede del localStorage
+  const token = localStorage.getItem("token");
+  const id_sede = localStorage.getItem("id_sede");
+
   const fetchNotificaciones = async () => {
     try {
-      const res = await fetch("http://localhost:3000/notificaciones");
+      const res = await fetch(`http://localhost:3000/notificaciones?id_sede=${id_sede}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
       const data = await res.json();
       setNotificaciones(Array.isArray(data) ? data : []);
       setLoading(false);
@@ -20,7 +31,10 @@ export default function Notificaciones() {
     try {
       await fetch(`http://localhost:3000/notificaciones/${id}/leida`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
       setNotificaciones((prev) =>
         prev.filter((n) => n.id_notificacion !== id)
@@ -31,8 +45,10 @@ export default function Notificaciones() {
   };
 
   useEffect(() => {
-    fetchNotificaciones();
-  }, []);
+    if (token && id_sede) {
+      fetchNotificaciones();
+    }
+  }, [token, id_sede]);
 
   if (loading) return <p>Cargando notificaciones...</p>;
 
@@ -44,7 +60,7 @@ export default function Notificaciones() {
         {notificaciones.map((n) => (
           <li key={n.id_notificacion} className="notificacion-item">
             <p><strong>Tipo:</strong> {n.tipo}</p>
-           <p><strong>Mensaje:</strong> {n.mensaje}</p>
+            <p><strong>Mensaje:</strong> {n.mensaje}</p>
             <p>
               <small>
                 Fecha: {n.fecha_evento ? new Date(n.fecha_evento).toLocaleDateString() : "Sin fecha"}

@@ -1,3 +1,20 @@
+/**
+ * 🧾 Registro.jsx
+ *
+ * Componente de registro y verificación de usuario.
+ *
+ * 🔹 Funcionalidad:
+ *  - Permite crear una nueva cuenta de usuario.
+ *  - Carga la lista de sedes desde el backend.
+ *  - Valida los datos antes de enviarlos.
+ *  - Envía la información al servidor para registrar y verificar el correo.
+ *  - Muestra mensajes de error o confirmación según la respuesta.
+ *
+ * 🔹 Hooks:
+ *  - useState → manejo de datos del formulario y pasos del proceso.
+ *  - useEffect → carga inicial de sedes desde la API.
+ */
+
 
 import './RegistroForm.css';
 import { useState, useEffect } from "react";
@@ -13,12 +30,14 @@ export default function Registro() {
   const [paso, setPaso] = useState("registro"); // controla registro o verificación
   const [codigo, setCodigo] = useState(""); // código de verificación
   const [sedes, setSedes] = useState([]);
+  const token = localStorage.getItem("token");
 
     useEffect(() => {
     fetch("http://localhost:3000/sede")
       .then(res => res.json())
       .then(data => setSedes(data))
       .catch(err => console.error(err));
+      
   }, []);
 
   const handleSubmitRegistro = async (e) => {
@@ -37,9 +56,8 @@ export default function Registro() {
     try {
       const res = await fetch("http://localhost:3000/usuarios/registrarse", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ correo, nombre, contraseña, id_sede }),
-          credentials: 'include'
       });
 
       const data = await res.json();
@@ -60,9 +78,8 @@ export default function Registro() {
     try {
       const res = await fetch("http://localhost:3000/usuarios/verificar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json"},
         body: JSON.stringify({ correo, codigo}),
-         credentials: "include"
       });
 
       const data = await res.json();

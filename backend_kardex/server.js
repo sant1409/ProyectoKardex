@@ -3,14 +3,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const  cors = require('cors');
 const app = express();
-const session = require('express-session');
 const port = process.env.PORT || 3000;
 const cron = require('node-cron');
 
 
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+  origin: 'http://localhost:5173'
 }));
 
 app.use(bodyParser.json());
@@ -21,21 +19,7 @@ app.get('/', (req, res ) => {
     res.send('API de el Kardex funcionando')
 });
 
-
-
-//Ruta de los usuarios
-
-app.use(session({
-    secret : '14092005SAnti',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-       httpOnly: true,
-    secure: false,
-    }
-}));
-
-
+//Ruta de los iusuarios
 const usuariosRouter = require('./routes/usuarios');
 app.use('/usuarios', usuariosRouter);
 
@@ -52,8 +36,6 @@ app.use('/kardex', kardexRouter);
 //Ruta de la auditoria
 const auditoriaRouter = require('./routes/auditoria');
 app.use ('/auditoria', auditoriaRouter);
-
-
 
 
 // Ruta para nombre_del_insumo
@@ -103,9 +85,9 @@ app.use ('/proveedor_k', proveedor_kRouter);
 const clasificacion_riesgoRouter = require('./routes/clasificacion_riesgo')
 app.use ('/clasificacion_riesgo', clasificacion_riesgoRouter);
 
-//Ruta del inventario de reactivos y insumos
-const inventarioRoutes = require("./routes/inventario");
-app.use("/inventario", inventarioRoutes);
+//Ruta de las sedes
+ const inventarioRoutes = require("./routes/inventario");
+ app.use("/inventario", inventarioRoutes);
 
 //Ruta de las notificaciones
  const notificacionesRoutes = require("./routes/notificaciones");
@@ -115,45 +97,63 @@ app.use("/inventario", inventarioRoutes);
  const sedeRoutes = require("./routes/sede");
  app.use("/sede", sedeRoutes);
 
+ //Ruta de la suscripciones 
+ const suscripcion_notificacionesRoutes = require("./routes/suscripcion_notificaciones");
+ app.use("/suscripcion_notificaciones", suscripcion_notificacionesRoutes)
 
-const { generarNotificacionesAutomaticas, enviarNotificacionesPorCorreo } = require('./utils/notificaciones');
+//Ruta de administrador
+const  adminRoutes = require("./routes/admin.js");
+app.use("/admin", adminRoutes)
 
-// Esto programa la tarea para que corra todos los días a las 08:00 AM
-cron.schedule('* * * * *', async () => {
-    console.log('⏰ Cron iniciado');
-  try {
-    console.log('✅ Ejecutando generación de notificaciones y envío de correos...');
-    await generarNotificacionesAutomaticas();
-    await enviarNotificacionesPorCorreo();
-    console.log('✅ Proceso de notificaciones completado.');
-  } catch (error) {
-    console.error('❌ Error en el cron de notificaciones:', error);
-    
-  }
+
+//Ruta de links
+const  linksRoutes = require("./routes/links.js");
+app.use("/links", linksRoutes)
+
+
+const { generarNotificacionesAutomaticas, enviarNotificacionesPorCorreo, procesarSalidas } = require('./utils/notificaciones');
+const pool = require('./db'); // conexión MySQL
+cron.schedule('* * * * *', async () => {  
+    console.log('⏰ Cron iniciado para notificaciones');
+    try {
+        // Obtener todas las sedes activas
+        const [sedes] = await pool.query('SELECT id_sede FROM sede');
+
+       for (const s of sedes) {
+    const id_sede = s.id_sede;
+    await procesarSalidas(id_sede); 
+    await generarNotificacionesAutomaticas(id_sede);
+    await enviarNotificacionesPorCorreo(id_sede);
+        }
+        console.log('✅ Proceso de notificaciones completado para todas las sedes.');
+    } catch (error) {
+        console.error('❌ Error en el cron de notificaciones:', error);
+    }
 });
 
-// Recorre todos los dias si un insumo o reactivo se terminan y se borran del stock inventario
-
+// Importar router y función del stock
 const { router: stock_inventarioRoutes, procesarFechasTerminacion } = require('./routes/stock_inventario');
+
 app.use("/stock_inventario", stock_inventarioRoutes);
-
+// Cron que recorre todas las sedes y procesa stock de cada una
 cron.schedule('0 8 * * *', async () => {
-  await procesarFechasTerminacion();
+    console.log('⏰ Cron iniciado para procesar stock por sedes');
+    try {
+        // Obtener todas las sedes activas
+        const [sedes] = await pool.query('SELECT id_sede FROM sede');
+
+        for (const s of sedes) {
+            const id_sede = s.id_sede;
+            console.log(`📦 Procesando stock para la sede ID: ${id_sede}`);
+            // Procesar fechas de terminación para esta sede
+            await procesarFechasTerminacion(id_sede);
+            console.log(`✅ Stock procesado para la sede ID: ${id_sede}`);
+        }
+        console.log('✅ Proceso de stock completado para todas las sedes.');
+    } catch (error) {
+        console.error('❌ Error en el cron de stock:', error);
+    }
 });
-
-
-const db = require('./models');
-
-db.sequelize.authenticate()
-  .then(() => {
-    console.log('✅ Conexión exitosa a la base de datos');
-  })
-  .catch(err => {
-    console.error('❌ Error conectando a la base de datos:', err);
-  });
-
-
-
 
 //Iniciar el servidor 
 app.listen(port, () => {

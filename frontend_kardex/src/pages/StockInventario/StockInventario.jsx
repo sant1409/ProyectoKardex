@@ -1,3 +1,16 @@
+/**
+ * 🧾 StockInventario.jsx
+ * 
+ * Página que muestra el stock actual de insumos y reactivos.
+ * Permite buscar, filtrar y visualizar la cantidad disponible de cada producto.
+ * 
+ * 🔹 Usa useEffect para cargar los datos desde el backend al iniciar.
+ * 🔹 Los filtros permiten buscar por tipo, nombre o casa comercial/laboratorio.
+ * 🔹 Incluye botón de "Volver" para regresar a la vista anterior.
+ * 🔹 Los datos se dividen en dos tablas: una para insumos y otra para reactivos.
+ */
+
+
 import { useEffect, useState } from "react";
 import "./StockInventario.css";
 import { useNavigate } from "react-router-dom";
@@ -26,9 +39,26 @@ export default function StockInventario() {
     cargarStock();
   }, []);
 
+  
+
   const cargarStock = async () => {
     try {
-      const res = await fetch("http://localhost:3000/stock_inventario");
+      const token = localStorage.getItem("token");
+      const idSede = localStorage.getItem("id_sede");
+
+      if (!token || !idSede) {
+        console.error("Falta token o id_sede en localStorage");
+        return;
+      }
+      const res = await fetch("http://localhost:3000/stock_inventario", {
+         headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+          }
+        });
+       if (!res.ok) {
+        throw new Error(`Error del servidor: ${res.status}`);
+      }
       const data = await res.json();
       setInsumos(data.insumos || []);
       setReactivos(data.reactivos || []);

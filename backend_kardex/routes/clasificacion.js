@@ -1,101 +1,110 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
+const { verificarToken } = require('../middlewares/auth');
 
-router.post('/', async (req, res) => {
 
+// ✅ Crear clasificación
+router.post('/', verificarToken, async (req, res) => {
   try {
-    const  { id_clasificacion, nombre} = req.body;
+    const { nombre } = req.body;
+    const id_sede = req.usuario.id_sede;
+
     const [result] = await pool.query(
-      'INSERT INTO insumos (id_clasificacion, nombre) VALUES (?, ?, ?)',
-      [id_clasificacion, nombre]
+      'INSERT INTO clasificacion (nombre, id_sede) VALUES (?, ?)',
+      [nombre, id_sede]
     );
 
-    res.status(201).json({ message: 'clasificacion creada exitosamente!', id_clasificacion: result.insertId });
+    res.status(201).json({
+      message: 'Clasificación creada exitosamente!',
+      id_clasificacion: result.insertId
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// ✅ Actualizar clasificación
+router.put('/:id_clasificacion', verificarToken, async (req, res) => {
+  try {
+    const id_sede = req.usuario.id_sede;
+    const { nombre } = req.body;
+    const { id_clasificacion } = req.params;
 
-router.put('/:id_clasificacion', async (req, res) => {
-    try{
-
-       const {nombre } = req.body;
-        
-       const {id_clasificacion} =  req.params; 
-
-    const   [result] = await pool.query(
-        'UPDATE clasificacion SET nombre = ? WHERE id_clasificacion= ?',
-        [nombre, id_clasificacion ]
+    const [result] = await pool.query(
+      'UPDATE clasificacion SET nombre = ? WHERE id_clasificacion = ? AND id_sede = ?',
+      [nombre, id_clasificacion, id_sede]
     );
 
     if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Clasificacion  no encontrado con ese ID' });
-        }
-
-     res.json({ message: 'La clasificacion se actualizó exitosamente' });
-    }catch (error) {
-     res.status(500).json({ error: error.message });
+      return res
+        .status(404)
+        .json({ message: 'Clasificación no encontrada o pertenece a otra sede' });
     }
 
+    res.json({ message: 'Clasificación actualizada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-router.get ('/:id_clasificacion', async (req, res) => {
-    try { 
-        const {id_clasificacion} = req.params;
-        const [rows] = await pool.query(
-            'SELECT * FROM clasificacion WHERE id_clasificacion = ?',
-            [id_clasificacion]
-        );
-        
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Clasificacion  no encontrada' });
-        }
-
-      res.json(rows[0]);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-
-    }
-});
-
-
-
-// GET todos los registros
-router.get("/", async (req, res) => {
+// ✅ Obtener una clasificación
+router.get('/:id_clasificacion', verificarToken, async (req, res) => {
   try {
+    const { id_clasificacion } = req.params;
+    const id_sede = req.usuario.id_sede;
+
     const [rows] = await pool.query(
-      "SELECT id_clasificacion, nombre AS clasificacion FROM clasificacion"
+      'SELECT * FROM clasificacion WHERE id_clasificacion = ? AND id_sede = ?',
+      [id_clasificacion, id_sede]
     );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Clasificación no encontrada' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ✅ Obtener todas las clasificaciones
+router.get('/', verificarToken, async (req, res) => {
+  try {
+    const id_sede = req.usuario.id_sede;
+    const [rows] = await pool.query(
+      'SELECT id_clasificacion, nombre AS clasificacion FROM clasificacion WHERE id_sede = ?',
+      [id_sede]
+    );
+
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// ✅ Eliminar clasificación
+router.delete('/:id_clasificacion', verificarToken, async (req, res) => {
+  try {
+    const { id_clasificacion } = req.params;
+    const id_sede = req.usuario.id_sede;
 
-router.delete ('/:id_clasificacion', async (req, res) => {
-    try {
-        const {id_clasificacion} = req.params;
-        const [result] = await pool.query(
-            'DELETE FROM clasificacion WHERE id_clasificacion = ?',
-            [id_clasificacion]
-        );
-        if (result.affectedRows === 0 ) {
-            return res.status(404).json({message: 'Clasificacion  no encontrada'});
+    const [result] = await pool.query(
+      'DELETE FROM clasificacion WHERE id_clasificacion = ? AND id_sede = ?',
+      [id_clasificacion, id_sede]
+    );
 
-        }
-
-        res.json({message: 'Clasificacion eliminada exitosamente'});
-    }catch (error){
-        res.status(500).json({error: error.message});
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ message: 'Clasificación no encontrada o pertenece a otra sede' });
     }
+
+    res.json({ message: 'Clasificación eliminada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-
-
 module.exports = router;
-
-
-

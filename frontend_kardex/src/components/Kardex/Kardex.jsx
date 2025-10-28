@@ -1,3 +1,26 @@
+/**
+ * 📘 Kardex.jsx
+ *
+ * Formulario principal para registrar o actualizar información de un insumo en el Kardex.
+ * 
+ * 🔹 Funcionalidad:
+ *  - Carga datos dinámicos (insumos, presentaciones, casas comerciales, etc.) desde la API.
+ *  - Permite crear o editar registros según si recibe `preData`.
+ *  - Usa selectores editables (react-select/creatable) para facilitar la gestión de valores.
+ *  - Envía datos al backend mediante `fetch` (POST o PUT).
+ *  - Muestra mensajes de éxito o error en pantalla.
+ * 
+ * 🔹 Props:
+ *  - preData: datos iniciales para precargar el formulario si se edita.
+ *  - onBack: función para volver a la vista anterior.
+ *  - onNuevoRegistro: callback al crear o actualizar un registro exitosamente.
+ * 
+ * 🔹 Hooks usados:
+ *  - useState: manejo del estado del formulario y listas de opciones.
+ *  - useEffect: carga de datos iniciales y precarga de `preData`.
+ */
+
+
 import { useState,  useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 import "./Kardex.css";
@@ -55,6 +78,7 @@ export default function Kardex({ preData, onBack, onNuevoRegistro }) {
   const [mensaje, setMensaje] = useState(""); 
 
 
+
    const camposVisibles = [
     "fecha_recepcion", "temperatura_llegada", "maximo", "minimo", "cantidad",
     "salida", "saldo", "id_nombre_insumo", "id_presentacion_k", "id_casa_comercial",
@@ -62,63 +86,85 @@ export default function Kardex({ preData, onBack, onNuevoRegistro }) {
     "estado_revision", "temperatura_almacenamiento", "id_clasificacion_riesgo",
     "principio_activo", "forma_farmaceutica", "concentracion", "unidad_medida",
     "fecha_salida", "fecha_inicio", "fecha_terminacion", "area", "factura",
-    "costo_general", "costo_caja", "costo_prueba", "iva", "consumible"
+    "costo_general", "costo_caja", "costo_prueba", "iva", "consumible", 
   ];
 
 useEffect(() => {
   const cargarDatos = async () => {
     try {
-      // 🔹 Fetch de insumos
-      const insumosRes = await fetch("http://localhost:3000/nombre_insumo");
+
+      const idSede = localStorage.getItem("id_sede");
+      const token = localStorage.getItem("token");
+
+      // 🔹 Fetch de reactivos
+      const insumosRes = await fetch(`http://localhost:3000/nombre_insumo?id_sede=${idSede}`, {
+        headers: {
+         "Authorization": `Bearer ${token}`
+          }
+        });
       const insumosData = await insumosRes.json();
       const insumosOpciones = insumosData.map(item => ({
         value: item.id_nombre_insumo,
         label: item.nombre_insumo
       }));
       setInsumos(insumosOpciones);
-      console.log("Insumos cargados:", insumosOpciones);
+  
 
       // 🔹 Fetch de presentaciones
-      const presentacionesRes = await fetch("http://localhost:3000/presentacion_k");
+      const presentacionesRes = await fetch(`http://localhost:3000/presentacion_k?id_sede=${idSede}`,{
+        headers: {
+         "Authorization": `Bearer ${token}`
+          }
+        });
       const presentacionesData = await presentacionesRes.json();
       const presentacionesOpciones = presentacionesData.map(item => ({
         value: item.id_presentacion_k,
         label: item.presentacion_k
       }));
       setPresentaciones(presentacionesOpciones);
-      console.log("Presentaciones cargadas:", presentacionesOpciones);
+
 
       // 🔹 Fetch de casas comerciales
-      const casasRes = await fetch("http://localhost:3000/casa_comercial");
+      const casasRes = await fetch(`http://localhost:3000/casa_comercial?id_sede=${idSede}`,{
+        headers: {
+         "Authorization": `Bearer ${token}`
+          }
+        });
       const casasData = await casasRes.json();
       const casasOpciones = casasData.map(item => ({
         value: item.id_casa_comercial,
         label: item.casa_comercial
       }));
       setCasasComerciales(casasOpciones);
-      console.log("Casas comerciales cargadas:", casasOpciones);
+   
 
       // 🔹 Fetch de proveedores
-      const proveedoresRes = await fetch("http://localhost:3000/proveedor_k");
+      const proveedoresRes = await fetch(`http://localhost:3000/proveedor_k?id_sede=${idSede}`,{
+        headers: {
+         "Authorization": `Bearer ${token}`
+          }
+        });
       const proveedoresData = await proveedoresRes.json();
       const proveedoresOpciones = proveedoresData.map(item => ({
         value: item.id_proveedor_k,
         label: item.proveedor_k
       }));
       setProveedores(proveedoresOpciones);
-      console.log("Proveedores cargados:", proveedoresOpciones);
+ 
 
       // 🔹 Fetch de clasificaciones de riesgo
-      const clasificacionesRes = await fetch("http://localhost:3000/clasificacion_riesgo");
+      const clasificacionesRes = await fetch(`http://localhost:3000/clasificacion_riesgo?id_sede=${idSede}`,{
+        headers: {
+         "Authorization": `Bearer ${token}`
+          }
+        });
       const clasificacionesData = await clasificacionesRes.json();
       const clasificacionesOpciones = clasificacionesData.map(item => ({
         value: item.id_clasificacion_riesgo,
         label: item.clasificacion_riesgo
       }));
       setClasificaciones(clasificacionesOpciones);
-      console.log("Clasificaciones cargadas:", clasificacionesOpciones);
 
-      
     if (preData && preData.id_kardex) {
   // 🔹 Buscar IDs a partir de los nombres
   const valorNombreInsumo = insumosOpciones.find(i => i.label === preData.nombre_insumo);
@@ -173,14 +219,12 @@ useEffect(() => {
     setFormData({ ...formData, [field]: newValue ? newValue.value : "" });
   };
 
-  const idUsuarioLogueadoRaw = localStorage.getItem("usuarioId");
-  const idUsuarioLogueado = idUsuarioLogueadoRaw ? parseInt(idUsuarioLogueadoRaw, 10) : null;
-  console.log("Usuario logueado desde localStorage (raw -> parsed):", idUsuarioLogueadoRaw, "->", idUsuarioLogueado);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-
+    const idUsuarioLogueado = localStorage.getItem("usuarioId");
+    const idSede = localStorage.getItem("id_sede")
 
   //Validacion de no actualizar casa o reactivo, esta es debido a que el stock no falle
 if (preData && preData.id_kardex) {
@@ -207,6 +251,7 @@ if (preData && preData.id_kardex) {
       lab_sas: valorLabSas,
       mes_registro: valorMesRegistro,
       usuarioId: idUsuarioLogueado,
+      id_sede: idSede, 
       id_nombre_insumo: formData.id_nombre_insumo,
       id_presentacion_k: formData.id_presentacion_k,
       id_casa_comercial: formData.id_casa_comercial,
@@ -220,17 +265,18 @@ if (preData && preData.id_kardex) {
       const url = preData && preData.id_kardex
         ? `http://localhost:3000/kardex/${preData.id_kardex}`
         : "http://localhost:3000/kardex";
-
+          
       const metodo = preData && preData.id_kardex ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method: metodo,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datosFinales),
-      
-        
-      });
-      
+         headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+           },
+           body: JSON.stringify(datosFinales)
+          });
+          
       const data = await res.json();
       console.log("📥 Respuesta completa del backend:", data);
 
@@ -240,9 +286,7 @@ if (preData && preData.id_kardex) {
         setMensaje("Error al enviar: " + (data.error || JSON.stringify(data)));
         return;
       }
-      
-
-
+    
 const tirilla = {
   detalle: {
     id_kardex: data.id_kardex || preData.id_kardex,
@@ -259,7 +303,7 @@ const tirilla = {
     }, {})
   }
 };
-
+ 
 if (typeof onNuevoRegistro === "function") {
   onNuevoRegistro(tirilla);
 }

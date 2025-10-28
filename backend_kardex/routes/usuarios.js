@@ -3,7 +3,9 @@ const router = express.Router();
 const pool = require('../db');
 const bcrypt = require('bcrypt');
 const nodemailer = require("nodemailer");
-
+const jwt = require('jsonwebtoken');
+const { verificarToken } = require('../middlewares/auth');
+const claveSecreta = process.env.JWT_SECRET || '123456789santiago';
 
 
 
@@ -68,54 +70,52 @@ router.post('/registrarse', async (req, res) => {
     }
 });
 
-
-//iniciar sesion 
-
-
+//Iniciar-sesion
 router.post('/iniciar_sesion', async (req, res) => {
-    const {correo, contraseña} = req.body;
+  const { correo, contraseña } = req.body;
 
-    if (!correo || !contraseña) {
-        return res.status(400).json({error: 'Correo y contraseña requeridos'});
+  if (!correo || !contraseña) {
+    return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM usuarios WHERE correo = ?', [correo]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ mensaje: 'Correo no registrado' });
     }
 
-    try {
+    const usuario = rows[0];
+    if (!usuario.verificado) {
+      return res.status(403).json({ error: 'Cuenta no verificada' });
+    }
 
-        const [rows] = await pool.query(
-            'SELECT * FROM usuarios WHERE correo = ?', [correo]);
+    const coincide = await bcrypt.compare(contraseña, usuario.contraseña);
+    if (!coincide) return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
 
-        if (rows.length === 0) {
-            return res.status(401).json({mensaje: 'correo no registrado'});
-        }
-
-        const usuario = rows[0];
-
-         console.log("Usuario encontrado:", usuario);
-        if (!usuario.verificado) {
-            return res.status(403).json ({error: 'Cuenta  no verificada'});
-        }
-
-        const coincide = await bcrypt.compare(contraseña, usuario.contraseña);
-         if (!coincide) return res.status(401).json ({mensaje: 'Contraseña incorrecta'});
-        
-
-       
-       req.session.usuario = {
+    // Crear token con la info del usuario
+    const token = jwt.sign(
+      {
         id_usuario: usuario.id_usuario,
         nombre: usuario.nombre,
-        correo: usuario.correo
-       };
-       console.log("✅ Usuario guardado en sesión:", req.session.usuario);
-       res.json ({mensaje: 'Inicio de sesion exitoso', usuario: req.session.usuario});
+        correo: usuario.correo,
+        id_sede: usuario.id_sede
+      },
+      claveSecreta,
+      { expiresIn: '1d' } // dura 1 día
+    );
 
+    res.json({
+      mensaje: 'Inicio de sesión exitoso',
+      token
+    });
 
-    } catch (error) {
-        res.status(500).json({ mensaje: 'Error en el servidor' });
-    }
-    
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error en el servidor' });
+  }
 });
-
-
 
 // Ruta de verificacion correo 
 router.post('/verificar', async (req, res) => {
@@ -157,16 +157,12 @@ router.post('/recuperar_clave', async (req, res)=>{
     if (!correo || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(correo)) {
         return res.status(400).json({ error: 'Correo inválido o faltante' });
     } 
-
     try {
 
-        
         const [rows] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [correo]);
         if (rows.length === 0) {
             return res.status(404).json({error: "Correo no registrado"});
-
-        }
-            
+        }        
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
 
     await pool.query('UPDATE usuarios SET codigo_recuperacion  = ? where correo = ?', [codigo, correo]);
@@ -241,8 +237,6 @@ router.post('/verificar_codigo', async(req, res) => {
 });
         
 
-
-
 // Modificar usuario
 router.put('/:id_usuario', async (req, res) => {
     const { correo, nombre, contraseña } = req.body;
@@ -284,23 +278,13 @@ router.put('/:id_usuario', async (req, res) => {
     }
 });
 
-
-// Obtener el perfil del usuario
-router.get('/sesion', async (req, res) => {
-    console.log('💡 req.session:', req.session); // <-- esto te muestra toda la sesión
-
-    if (!req.session.usuario) {
-        console.log('⚠️ No hay usuario en sesión');
-        return res.status(401).json({ error: 'No has iniciado sesion' });
-    }
-
-    const { id_usuario, nombre, correo } = req.session.usuario;
-    console.log('✅ Usuario en sesión:', req.session.usuario);
-
-    res.json({
-        mensaje: 'Perfil accedido correctamente',
-        usuario: { id_usuario, nombre, correo }
-    });
+//Verificar si el usuario si quedo en la sesion
+router.get('/sesion', verificarToken, async (req, res) => {
+  const { id_usuario, nombre, correo, id_sede } = req.usuario;
+  res.json({
+    mensaje: 'Perfil accedido correctamente',
+    usuario: { id_usuario, nombre, correo, id_sede }
+  });
 });
 
 
@@ -378,6 +362,8 @@ router.delete('/:id_usuario', async (req, res) => {
         });
     }
 });
+
+
 
 module.exports = router;
 

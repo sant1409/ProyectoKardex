@@ -1,98 +1,110 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
+const { verificarToken } = require('../middlewares/auth');
 
+// ✅ Crear categoría
+router.post('/', verificarToken, async (req, res) => {
+  try {
+    const { nombre } = req.body;
+    const id_sede = req.usuario.id_sede;
 
-router.post ('/', async (req, res) => {
-    try { 
+    const [result] = await pool.query(
+      'INSERT INTO categoria (nombre, id_sede) VALUES (?, ?)',
+      [nombre, id_sede]
+    );
 
-     const  {nombre}  = req.body;
-     const [result] = await pool.query(
-            'INSERT INTO categoria(nombre) VALUES (?)',
-            [nombre]
-        );
-
-    res.status(201).json({ message: 'nombre de categoria creada exitosamente!', id_categoria: result.insertId });
-    }catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    res.status(201).json({
+      message: 'Categoría creada exitosamente!',
+      id_categoria: result.insertId
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
+// ✅ Actualizar categoría
+router.put('/:id_categoria', verificarToken, async (req, res) => {
+  try {
+    const id_sede = req.usuario.id_sede;
+    const { nombre } = req.body;
+    const { id_categoria } = req.params;
 
-
-router.put('/:id_categoria', async (req, res) => {
-    try{
-
-       const {nombre } = req.body;
-        
-       const {id_categoria} =  req.params; 
-
-    const   [result] = await pool.query(
-        'UPDATE categoria SET nombre = ? WHERE id_categoria = ?',
-        [nombre, id_categoria  ]
+    const [result] = await pool.query(
+      'UPDATE categoria SET nombre = ? WHERE id_categoria = ? AND id_sede = ?',
+      [nombre, id_categoria, id_sede]
     );
 
     if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Categoria  no encontrado con ese ID' });
-        }
-
-     res.json({ message: 'La categoria se actualizó exitosamente' });
-    }catch (error) {
-     res.status(500).json({ error: error.message });
+      return res.status(404).json({ message: 'Categoría no encontrada o pertenece a otra sede' });
     }
 
+    res.json({ message: 'Categoría actualizada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-router.get ('/:id_categoria', async (req, res) => {
-    try { 
-        const {id_categoria} = req.params;
-        const [rows] = await pool.query(
-            'SELECT * FROM categoria WHERE id_categoria = ?',
-            [id_categoria]
-        );
-        
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Categoria no encontrada' });
-        }
-
-      res.json(rows[0]);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-
-    }
-});
-
-// GET todos los registros
-router.get("/", async (req, res) => {
+// ✅ Obtener una categoría por ID
+router.get('/:id_categoria', verificarToken, async (req, res) => {
   try {
+    const { id_categoria } = req.params;
+    const id_sede = req.usuario.id_sede;
+
     const [rows] = await pool.query(
-      "SELECT id_categoria, nombre AS categoria FROM categoria"
+     'SELECT id_categoria, nombre AS categoria, id_sede FROM categoria WHERE id_categoria = ? AND id_sede = ?',
+
+    
+      [id_categoria, id_sede]
     );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Categoría no encontrada' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ✅ Obtener todas las categorías de la sede
+router.get('/', verificarToken, async (req, res) => {
+  try {
+    const id_sede = req.usuario.id_sede;
+
+    const [rows] = await pool.query(
+  'SELECT id_categoria, nombre AS categoria, id_sede FROM categoria WHERE id_sede = ?',
+  
+  [id_sede]
+   );
+
+
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// ✅ Eliminar categoría
+router.delete('/:id_categoria', verificarToken, async (req, res) => {
+  try {
+    const id_sede = req.usuario.id_sede;
+    const { id_categoria } = req.params;
 
-router.delete ('/:id_categoria', async (req, res) => {
-    try {
-        const {id_categoria} = req.params;
-        const [result] = await pool.query(
-            'DELETE FROM categoria WHERE id_categoria = ?',
-            [id_categoria]
-        );
-        if (result.affectedRows === 0 ) {
-            return res.status(404).json({message: 'Categoria  no encontrada'});
+    const [result] = await pool.query(
+      'DELETE FROM categoria WHERE id_categoria = ? AND id_sede = ?',
+      [id_categoria, id_sede]
+    );
 
-        }
-
-        res.json({message: 'Categoria eliminada exitosamente'});
-    }catch (error){
-        res.status(500).json({error: error.message});
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Categoría no encontrada o pertenece a otra sede' });
     }
+
+    res.json({ message: 'Categoría eliminada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
-
-
 
 module.exports = router;

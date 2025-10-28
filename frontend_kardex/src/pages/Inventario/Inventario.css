@@ -10,7 +10,7 @@
   height: 80vh;              /* altura visible */
   overflow-y: auto;          /* activa scroll vertical */
   scrollbar-width: thin;     /* scroll fino (Firefox) */
-  scrollbar-color: #007bff #f1f1f1;
+  scrollbar-color: #000000 #f1f1f1;
 }
 
 /* Estilo del scroll (para navegadores basados en WebKit) */
@@ -40,7 +40,7 @@
 /* Estilo del botón volver */
 .btn-volver,
 .btn-stock {
-  background-color: #007bff;
+  background-color: #080808;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -51,7 +51,7 @@
 }
 
 .btn-volver:hover {
-  background-color: #0056b3;
+   background-color: #0f72ce; 
 }
 
 /* Contenedor de filtros */
@@ -72,7 +72,7 @@
 }
 
 .inventario-filtros button {
-  background-color: #007bff;
+    background-color: #080808;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -80,7 +80,7 @@
 }
 
 .inventario-filtros button:hover {
-  background-color: #0056b3;
+  background-color: #0f72ce; 
 }
 
 /* Grid de inventario */
