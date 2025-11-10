@@ -1,3 +1,10 @@
+/**
+ * Rutas para la gestión de presentaciones de insumos.
+ * Permite crear, editar, listar y eliminar presentaciones, 
+ * restringidas a la sede del usuario autenticado.
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

@@ -1,3 +1,11 @@
+/**
+ * 🔹 suscripcion_notificaciones.routes.js
+ * Rutas para gestionar las suscripciones de notificaciones por sede.
+ * Permite crear, listar, actualizar y eliminar correos suscritos
+ * asociados al usuario autenticado.
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -62,7 +70,6 @@ router.delete('/:id', verificarToken, async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar suscripción' });
   }
 });
-
 
 // 🔹 Actualizar correo de una suscripción
 router.put('/:id', verificarToken, async (req, res) => {

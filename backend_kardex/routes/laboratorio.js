@@ -1,3 +1,8 @@
+// Rutas para gestionar los laboratorios del sistema.
+// Permite crear, actualizar, consultar y eliminar laboratorios por sede.
+// Todas las operaciones están protegidas con autenticación mediante token.
+// Parte de insumos
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

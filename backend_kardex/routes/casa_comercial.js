@@ -1,3 +1,8 @@
+// Rutas para gestionar las casas comerciales del sistema.
+// Permite crear, actualizar, consultar y eliminar casas comerciales por sede.
+// Todas las operaciones requieren autenticación con token.
+//Tener en cuenta que este hace parte de kardex(reactivos)
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

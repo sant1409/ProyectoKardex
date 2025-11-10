@@ -1,3 +1,12 @@
+/**
+ * 🔹 stock_inventario.routes.js
+ * Módulo encargado de gestionar el inventario global.
+ * Incluye rutas para consultar stock de insumos y reactivos por sede,
+ * funciones automáticas para eliminar o ajustar registros vencidos,
+ * y utilidades para mantener actualizado el stock desde el Kardex.
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db'); // tu conexión MySQL

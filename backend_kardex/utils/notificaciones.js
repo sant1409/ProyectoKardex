@@ -1,3 +1,27 @@
+/**
+ * 🔔 Módulo de Notificaciones - Sistema Kardex
+ * ------------------------------------------------------------
+ * Este módulo gestiona la creación, consulta y envío de notificaciones 
+ * automáticas relacionadas con insumos y reactivos del sistema Kardex.
+ * 
+ * 📦 Funcionalidades principales:
+ *  - Crear y registrar notificaciones en base de datos (evita duplicados).
+ *  - Generar alertas automáticas por vencimiento (7 días antes o el mismo día).
+ *  - Crear notificaciones por salidas de insumos o reactivos (fecha de terminación).
+ *  - Enviar correos automáticos a los suscriptores de cada sede con las alertas.
+ *  - Permitir marcar notificaciones como leídas desde el sistema.
+ * 
+ * 🧠 Detalles técnicos:
+ *  - Usa `pool` para conectarse a la base de datos MySQL.
+ *  - Usa `nodemailer` con Gmail para enviar correos automáticos.
+ *  - Todas las operaciones se filtran por `id_sede` para garantizar la separación por sedes.
+ *  - Se puede cambiar el correo que envia las notificaciones, solo debemos bucar la clave especial que proporciona tu cuenta de gmail.
+ * 
+ * 📅 Autor: [Tu nombre o equipo]
+ * 📂 Ubicación: /utils/notificaciones.js
+ */
+
+
 const pool = require('../db');
 const nodemailer = require('nodemailer');
 

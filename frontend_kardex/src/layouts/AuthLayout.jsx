@@ -11,13 +11,13 @@ export default function AuthLayout({ children }) {
 
         {/* Logo abajo */}
         <div className="logo-bottom">
-          <img src="/slider/Logo.png" alt="Logo" />
+          <img src="/visual/Logo.png" alt="Logo" />
         </div>
       </div>
 
       {/* Columna derecha con imagen + overlay */}
       <div className="right-column">
-        <img src="/slider/Almacen.png" alt="Almacén" />
+        <img src="/visual/Almacen.png" alt="Almacén" />
 
         {/* Overlay de texto */}
         <div className="overlay-text">

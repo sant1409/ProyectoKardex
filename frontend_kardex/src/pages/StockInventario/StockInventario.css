@@ -1,5 +1,6 @@
+/* --- Contenedor principal --- */
 .stock-container {
-  max-width: 1300px;
+  max-width: 1500px;
   margin: 30px auto;
   padding: 20px;
   background: #f9fafb; /* fondo clarito */
@@ -11,11 +12,12 @@
   scrollbar-color: #000000 #f1f1f1;
 }
 
-/* Estilo del scroll (para navegadores basados en WebKit) */
+/* Scroll personalizado (navegadores WebKit) */
 .stock-container::-webkit-scrollbar {
   width: 8px;
 }
 
+/* Títulos */
 .stock-container h2 {
   text-align: center;
   font-size: 28px;
@@ -32,34 +34,62 @@
   padding-left: 8px;
 }
 
+/* --- Tablas --- */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
   font-size: 15px;
+  table-layout: fixed; /* 🔹 asegura alineación de columnas */
 }
 
+/* Encabezado */
 thead {
-      background-color: #080808;
-
+  background-color: #080808;
   color: white;
 }
 
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+th {
+  padding: 12px 10px;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 3px solid #050606;
 }
 
+/* Ancho de columnas */
+th:nth-child(1), td:nth-child(1) { width: 30%; } /* Nombre */
+th:nth-child(2), td:nth-child(2) { width: 15%; } /* Cantidad */
+th:nth-child(3), td:nth-child(3) { width: 30%; } /* Laboratorio / Casa comercial */
+
+/* Celdas */
+td {
+  padding: 12px 10px;
+  vertical-align: middle;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: 2px solid #050606;
+}
+
+/* Permitir varias líneas solo en la primera columna */
+td:nth-child(1) {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Centrar cantidad */
+td:nth-child(2) {
+  text-align: center;
+}
+
+/* Hover */
 tbody tr:hover {
   background-color: #f1f5f9;
 }
 
-td {
-  color: #334155;
-}
-
-/* Responsive */
+/* --- Responsive --- */
 @media (max-width: 768px) {
   table, thead, tbody, th, td, tr {
     display: block;
@@ -86,15 +116,26 @@ td {
     font-weight: bold;
     color: #0f172a;
     content: attr(data-label);
+    width: 45%;
+    display: inline-block;
   }
 }
 
-/* Contenedor de filtros */
+/* Ajustar alineación de las columnas de texto largo */
+td:nth-child(3) {
+  white-space: normal;
+  word-break: break-word;
+  text-align: center; /* opcional, para centrar el texto */
+}
+
+
+/* --- Filtros --- */
 .stock-filtros {
   display: flex;
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
 .stock-filtros select,
@@ -115,6 +156,5 @@ td {
 }
 
 .stock-filtros button:hover {
- background-color: #0f72ce;
+  background-color: #0f72ce;
 }
-

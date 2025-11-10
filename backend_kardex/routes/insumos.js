@@ -3,7 +3,7 @@
  *  📦 Módulo: insumos.js
  * ============================================================
  * 
- * Controlador principal para la gestión de insumos dentro del sistema de inventario.
+ * Controlador principal para la gestión de insumos, inventario + stock inventario.
  * 
  * Este módulo se encarga de realizar todas las operaciones relacionadas con los insumos:
  * creación, consulta, modificación y eliminación, garantizando la integridad del stock
@@ -63,7 +63,7 @@
  *     • insumo
  *     • stock_inventario
  *     • auditoria
- *     • proveedor / laboratorio / nombre_del_insumo / presentación
+ *     • proveedor / laboratorio / nombre_del_insumo / presentación / clasificacion
  * 
  * ------------------------------------------------------------
  */
@@ -111,7 +111,7 @@ async function obtenerOcrearFK(pool, tabla, columna, valor, id_sede) {
 }
 
 // Crear insumo
-router.post('/',verificarToken, async (req, res) => {
+router.post('/', verificarToken, async (req, res) => {
 
   try {
     const {
@@ -122,7 +122,7 @@ router.post('/',verificarToken, async (req, res) => {
       consumible, mes_registro, id_categoria, usuarioId
     } = req.body;
 
-        const id_sede = req.usuario.id_sede;
+    const id_sede = req.usuario.id_sede;
 
     // Validar formato de fecha
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -139,8 +139,8 @@ router.post('/',verificarToken, async (req, res) => {
       return res.status(400).json({ error: "El nombre del insumo es obligatorio, para que el stock funcione correctamente" });
     }
 
-     // Validar nombre del insumo
-    if (!id_laboratorio  || (typeof id_laboratorio === "string" && id_laboratorio.trim() === "")) {
+    // Validar nombre del insumo
+    if (!id_laboratorio || (typeof id_laboratorio === "string" && id_laboratorio.trim() === "")) {
       return res.status(400).json({ error: "El nombre del laboratorio es obligatorio, para que el stock funcione correctamente" });
     }
 
@@ -149,14 +149,21 @@ router.post('/',verificarToken, async (req, res) => {
     if (cantidad === undefined || cantidad === null || (typeof cantidad === 'string' && cantidad.trim() === '') || isNaN(Number(cantidad))) {
       return res.status(400).json({ error: "La cantidad es obligatoria para que el stock pueda funcionar correctamente" });
     }
-     console.log('id_sede:', id_sede)
+    console.log('id_sede:', id_sede)
     // Validar o crear FK
     const idNombreDelInsumo = await obtenerOcrearFK(pool, 'nombre_del_insumo', 'nombre_del_insumo', id_nombre_del_insumo, id_sede);
-    const idPresentacion     = await obtenerOcrearFK(pool, 'presentacion', 'presentacion', id_presentacion, id_sede);
-    const idLaboratorio      = await obtenerOcrearFK(pool, 'laboratorio', 'laboratorio', id_laboratorio, id_sede);
-    const idProveedor        = await obtenerOcrearFK(pool, 'proveedor', 'proveedor', id_proveedor, id_sede);
-    const idClasificacion    = await obtenerOcrearFK(pool, 'clasificacion', 'clasificacion', id_clasificacion, id_sede);
-    const idCategoria        = await obtenerOcrearFK(pool, 'categoria', 'categoria', id_categoria, id_sede);
+    const idPresentacion = await obtenerOcrearFK(pool, 'presentacion', 'presentacion', id_presentacion, id_sede);
+    const idLaboratorio = await obtenerOcrearFK(pool, 'laboratorio', 'laboratorio', id_laboratorio, id_sede);
+    const idProveedor = await obtenerOcrearFK(pool, 'proveedor', 'proveedor', id_proveedor, id_sede);
+    const idClasificacion = await obtenerOcrearFK(pool, 'clasificacion', 'clasificacion', id_clasificacion, id_sede);
+    const idCategoria = await obtenerOcrearFK(pool, 'categoria', 'categoria', id_categoria, id_sede);
+
+    // ❌ Restricción: no permitir 'salida' en la creación
+    if (salida !== undefined && salida !== null && Number(salida) > 0) {
+      return res.status(400).json({
+        error: "No se puede asignar una salida al crear un insumo. La salida solo puede registrarse al actualizar un insumo."
+      });
+    }
 
     const [result] = await pool.query(
       `INSERT INTO insumos (
@@ -181,7 +188,8 @@ router.post('/',verificarToken, async (req, res) => {
       [usuarioId]
     );
     const nombreUsuario = usuarioResult.length > 0 ? usuarioResult[0].nombre : 'Desconocido';
-    await registrarAuditoria('insumos', result.insertId, 'creacion', 'Se creó un nuevo insumo', usuarioId, nombreUsuario, id_sede);
+    await registrarAuditoria('insumos', result.insertId, 'creo', req.usuario);
+
 
     // Stock: siempre crear un registro nuevo
     const [productoRow] = await pool.query(
@@ -210,9 +218,9 @@ router.post('/',verificarToken, async (req, res) => {
 
 // Buscar insumos (con joins completos y filtros)
 // Buscar insumos (con joins completos y filtros por sede)
-router.get('/buscar_insumos',verificarToken, async (req, res) => {
+router.get('/buscar_insumos', verificarToken, async (req, res) => {
   const { q, nombre, laboratorio, lote, desde, hasta } = req.query;
-    const id_sede = req.usuario.id_sede; // ✅ Sede del usuario logueado
+  const id_sede = req.usuario.id_sede; // ✅ Sede del usuario logueado
 
   let condiciones = [];
   let valores = [];
@@ -316,235 +324,241 @@ router.get('/buscar_insumos',verificarToken, async (req, res) => {
 });
 
 function emptyToNull(val) {
-   return val === undefined || val === null || (typeof val === 'string' && val.trim() === '') ? null : val;
- }
- router.put('/:id_insumo',verificarToken, async (req, res) => {
-   
-     const {
-         fecha, temperatura, cantidad, salida, saldo, id_nombre_del_insumo, id_presentacion,
-         id_laboratorio, id_proveedor, lote, fecha_de_vto, registro_invima, expediente_invima,
-         id_clasificacion, estado_de_revision, salida_fecha, inicio, termino,
-         lab_sas, factura, costo_global, costo, costo_prueba, costo_unidad, iva,
-         consumible, mes_registro, id_categoria, usuarioId, 
-     } = req.body;
-     const { id_insumo } = req.params;
-       const id_sede = req.usuario.id_sede;
+  return val === undefined || val === null || (typeof val === 'string' && val.trim() === '') ? null : val;
+}
+router.put('/:id_insumo', verificarToken, async (req, res) => {
 
-      //Validar formato de fecha
-            const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!fecha || !fechaRegex.test(fecha)) {
-            return res.status(400).json({ error: 'La fecha debe tener el formato YYYY-MM-DD' });
-            }
+  const {
+    fecha, temperatura, cantidad, salida, saldo, id_nombre_del_insumo, id_presentacion,
+    id_laboratorio, id_proveedor, lote, fecha_de_vto, registro_invima, expediente_invima,
+    id_clasificacion, estado_de_revision, salida_fecha, inicio, termino,
+    lab_sas, factura, costo_global, costo, costo_prueba, costo_unidad, iva,
+    consumible, mes_registro, id_categoria, usuarioId,
+  } = req.body;
+  const { id_insumo } = req.params;
+  const id_sede = req.usuario.id_sede;
 
-            // Validar formato de fecha vto
-            if (fecha_de_vto && !fechaRegex.test(fecha_de_vto)) {
-             return res.status(400).json({ error: 'La fecha de vencimiento debe tener el formato YYYY-MM-DD' });
-              }
+  //Validar formato de fecha
+  const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!fecha || !fechaRegex.test(fecha)) {
+    return res.status(400).json({ error: 'La fecha debe tener el formato YYYY-MM-DD' });
+  }
 
-            //Validar el nombre del inumo para que funcione el stock
-              if (!id_nombre_del_insumo || (typeof id_nombre_del_insumo === "string" && id_nombre_del_insumo.trim() === "")) {
-              return res.status(400).json({ error: "El nombre del insumo es obligatorio para que pueda funcionar el stock" });
-              }
-   
-              //Validar  la cantidad para que funcione el stock
-              if (
-                 cantidad === undefined ||
-                   cantidad === null ||
-                  (typeof cantidad === 'string' && cantidad.trim() === '') ||
-                   isNaN(Number(cantidad))
-                  ) {
-                   return res.status(400).json({ error: "La cantidad es obligatoria para que el stock pueda funcionar correctamente" });
-                }
+  // Validar formato de fecha vto
+  if (fecha_de_vto && !fechaRegex.test(fecha_de_vto)) {
+    return res.status(400).json({ error: 'La fecha de vencimiento debe tener el formato YYYY-MM-DD' });
+  }
 
-                // ✅ Validar que la categoría no quede vacía al actualizar
-                 if (
-                      id_categoria === undefined ||
-                      id_categoria === null ||
-                   (typeof id_categoria === "string" && id_categoria.trim() === "")
-                     ) {
-                       return res.status(400).json({ 
-                         error: "La categoría es obligatoria. No puedes dejar este campo vacío al actualizar." 
-                         });
-                      }
-    
-                const fkFields = {
-                id_nombre_del_insumo: emptyToNull(id_nombre_del_insumo),
-                id_presentacion: emptyToNull(id_presentacion),
-                id_laboratorio: emptyToNull(id_laboratorio),
-                id_proveedor: emptyToNull(id_proveedor),
-                id_clasificacion: emptyToNull(id_clasificacion),
-                id_categoria: emptyToNull(id_categoria),
-            };
+  //Validar el nombre del inumo para que funcione el stock
+  if (!id_nombre_del_insumo || (typeof id_nombre_del_insumo === "string" && id_nombre_del_insumo.trim() === "")) {
+    return res.status(400).json({ error: "El nombre del insumo es obligatorio para que pueda funcionar el stock" });
+  }
 
-      try {
-       // Leer registro viejo
+  //Validar  la cantidad para que funcione el stock
+  if (
+    cantidad === undefined ||
+    cantidad === null ||
+    (typeof cantidad === 'string' && cantidad.trim() === '') ||
+    isNaN(Number(cantidad))
+  ) {
+    return res.status(400).json({ error: "La cantidad es obligatoria para que el stock pueda funcionar correctamente" });
+  }
+
+  // ✅ Validar que la categoría no quede vacía al actualizar
+  if (
+    id_categoria === undefined ||
+    id_categoria === null ||
+    (typeof id_categoria === "string" && id_categoria.trim() === "")
+  ) {
+    return res.status(400).json({
+      error: "La categoría es obligatoria. No puedes dejar este campo vacío al actualizar."
+    });
+  }
+
+  const fkFields = {
+    id_nombre_del_insumo: emptyToNull(id_nombre_del_insumo),
+    id_presentacion: emptyToNull(id_presentacion),
+    id_laboratorio: emptyToNull(id_laboratorio),
+    id_proveedor: emptyToNull(id_proveedor),
+    id_clasificacion: emptyToNull(id_clasificacion),
+    id_categoria: emptyToNull(id_categoria),
+  };
+
+  try {
+    // Leer registro viejo
     const [oldRows] = await pool.query('SELECT * FROM insumos WHERE id_insumo = ? AND id_sede = ?', [id_insumo, id_sede]);
     const oldInsumos = oldRows.length > 0 ? oldRows[0] : null;
     if (!oldInsumos) return res.status(404).json({ message: 'Insumo no encontrado con ese ID' });
 
-      //Validar FK solo si no es null
-     for (const [tabla, valor] of Object.entries(fkFields)) {
-       if (valor !== null) {
-          //el nombre de tabla en validarFKObligatorio no debe llevar "id_"
-         const tablaSinId = tabla.replace(/^id_/, '');
-         fkFields[tabla] = await obtenerOcrearFK(pool, tablaSinId, tablaSinId, valor, id_sede);
-       }
-     }
-         const [result] = await pool.query(
-              `UPDATE insumos SET
+    //Validar FK solo si no es null
+    for (const [tabla, valor] of Object.entries(fkFields)) {
+      if (valor !== null) {
+        //el nombre de tabla en validarFKObligatorio no debe llevar "id_"
+        const tablaSinId = tabla.replace(/^id_/, '');
+        fkFields[tabla] = await obtenerOcrearFK(pool, tablaSinId, tablaSinId, valor, id_sede);
+      }
+    }
+    // --- Calcular nueva cantidad disponible ANTES del update general
+    let nuevaCantidad = Number(cantidad || 0) - Number(salida || 0);
+    if (nuevaCantidad < 0) nuevaCantidad = 0;
+
+    // reemplazamos la variable cantidad por la nueva
+    const cantidadFinal = nuevaCantidad;
+
+    const [result] = await pool.query(
+      `UPDATE insumos SET
                  fecha = ?, temperatura = ?, cantidad = ?, salida = ?, saldo = ?, id_nombre_del_insumo = ?, id_presentacion = ?,
                  id_laboratorio = ?, id_proveedor = ?, lote = ?, fecha_de_vto = ?, registro_invima = ?, expediente_invima = ?,
                  id_clasificacion = ?, estado_de_revision = ?, salida_fecha = ?, inicio = ?, termino = ?,
                  lab_sas = ?, factura = ?, costo_global = ?, costo = ?, costo_prueba = ?, costo_unidad = ?, iva = ?,
                  consumible = ?,mes_registro = ?, id_categoria = ?,  usuarioId = ? WHERE id_insumo = ? AND id_sede = ?`,
-            
-                 [
-                    fecha, temperatura, cantidad, salida, saldo,
-                    fkFields.id_nombre_del_insumo, fkFields.id_presentacion, fkFields.id_laboratorio, fkFields.id_proveedor,
-                    lote, fecha_de_vto, registro_invima, expediente_invima,
-                    fkFields.id_clasificacion, estado_de_revision, salida_fecha, inicio, termino,
-                    lab_sas, factura, costo_global, costo, costo_prueba, costo_unidad,
-                    iva, consumible, mes_registro, fkFields.id_categoria, usuarioId, id_insumo, id_sede
-                 ]
-         );
-         const [usuarioResult] = await pool.query(
-             'SELECT nombre FROM usuarios WHERE id_usuario = ? AND id_sede = ?',
-             [usuarioId, id_sede]
-         );
-        
 
-         const nombreUsuario = usuarioResult.length > 0 ? usuarioResult[0].nombre: 'Desconocido';
-         await registrarAuditoria( 'insumos', id_insumo, 'modificacion',  `Se modificó el insumo con ID ${id_insumo}`, usuarioId, nombreUsuario, id_sede);
+      [
+        fecha, temperatura, cantidadFinal, salida, saldo,
+        fkFields.id_nombre_del_insumo, fkFields.id_presentacion, fkFields.id_laboratorio, fkFields.id_proveedor,
+        lote, fecha_de_vto, registro_invima, expediente_invima,
+        fkFields.id_clasificacion, estado_de_revision, salida_fecha, inicio, termino,
+        lab_sas, factura, costo_global, costo, costo_prueba, costo_unidad,
+        iva, consumible, mes_registro, fkFields.id_categoria, usuarioId, id_insumo, id_sede
+      ]
+    );
+    const [usuarioResult] = await pool.query(
+      'SELECT nombre FROM usuarios WHERE id_usuario = ? AND id_sede = ?',
+      [usuarioId, id_sede]
+    );
 
-            //Notificar fecha de salida
-        await procesarSalidas();
-         if (result.affectedRows === 0) {
-             return res.status(404).json({ message: 'Insumo no encontrado con ese ID' });
-         }
+    const nombreUsuario = usuarioResult.length > 0 ? usuarioResult[0].nombre : 'Desconocido';
+    await registrarAuditoria('insumos', id_insumo, 'modificó', req.usuario);
 
-        try {
-        // --- Valores antiguos
-        const oldCantidad = Number(oldInsumos?.cantidad || 0);
-        const oldSalida = Number(oldInsumos?.salida || 0); 
-        const oldIdNombre = oldInsumos?.id_nombre_del_insumo;
-        const oldLab = oldInsumos?.id_laboratorio;
-        const oldTerminoRaw = oldInsumos?.termino;
+    //Notificar fecha de salida
+    await procesarSalidas();
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Insumo no encontrado con ese ID' });
+    }
 
-        // --- Valores nuevos (si no vienen, usar viejo)
-        const newCantidad = (cantidad === undefined || cantidad === null || cantidad === '') ? oldCantidad : Number(cantidad);
-        const newSalida = (salida === undefined || salida === null || salida === '') ? oldSalida : Number(salida);
-        const newIdNombre = fkFields.id_nombre_del_insumo ?? oldIdNombre;
-        const newLab = fkFields.id_laboratorio ?? oldLab;
-        const newTerminoRaw = termino;
+    try {
+      // --- Valores antiguos
+      const oldCantidad = Number(oldInsumos?.cantidad || 0);
+      const oldSalida = Number(oldInsumos?.salida || 0);
+      const oldIdNombre = oldInsumos?.id_nombre_del_insumo;
+      const oldLab = oldInsumos?.id_laboratorio;
+      const oldTerminoRaw = oldInsumos?.termino;
 
-        // --- Helper para parsear fechas
-        const parseDate = (v) => {
+      // --- Valores nuevos (si no vienen, usar viejo)
+      const newCantidad = (cantidad === undefined || cantidad === null || cantidad === '') ? oldCantidad : Number(cantidad);
+      const newSalida = (salida === undefined || salida === null || salida === '') ? oldSalida : Number(salida);
+      const newIdNombre = fkFields.id_nombre_del_insumo ?? oldIdNombre;
+      const newLab = fkFields.id_laboratorio ?? oldLab;
+      const newTerminoRaw = termino;
+
+      // --- Helper para parsear fechas
+      const parseDate = (v) => {
         if (!v) return null;
         const d = (v instanceof Date) ? v : new Date(v);
         return isNaN(d.getTime()) ? null : d;
       };
- 
-        const oldTerminoDate = parseDate(oldTerminoRaw);
-        const newTerminoDate = parseDate(newTerminoRaw);
 
-        // --- Obtener nombres legibles
-        const [oldNameRow] = await pool.query(
-         'SELECT nombre AS nombre_producto FROM nombre_del_insumo WHERE id_nombre_del_insumo = ? AND id_sede = ?',
-           [oldIdNombre, id_sede]
-          );
-        const oldNombreProducto = oldNameRow.length ? oldNameRow[0].nombre_producto : null;
+      const oldTerminoDate = parseDate(oldTerminoRaw);
+      const newTerminoDate = parseDate(newTerminoRaw);
 
-        const [newNameRow] = await pool.query(
+      // --- Obtener nombres legibles
+      const [oldNameRow] = await pool.query(
+        'SELECT nombre AS nombre_producto FROM nombre_del_insumo WHERE id_nombre_del_insumo = ? AND id_sede = ?',
+        [oldIdNombre, id_sede]
+      );
+      const oldNombreProducto = oldNameRow.length ? oldNameRow[0].nombre_producto : null;
+
+      const [newNameRow] = await pool.query(
         'SELECT nombre AS nombre_producto FROM nombre_del_insumo WHERE id_nombre_del_insumo = ? AND id_sede = ?',
         [newIdNombre, id_sede]
-          );
-        const newNombreProducto = newNameRow.length ? newNameRow[0].nombre_producto : null;
+      );
+      const newNombreProducto = newNameRow.length ? newNameRow[0].nombre_producto : null;
 
-        // --- Normalización 
-         const oldNombreClean = oldNombreProducto ? oldNombreProducto.trim().toUpperCase() : null;
-        const newNombreClean = newNombreProducto ? newNombreProducto.trim().toUpperCase() : null;
+      // --- Normalización 
+      const oldNombreClean = oldNombreProducto ? oldNombreProducto.trim().toUpperCase() : null;
+      const newNombreClean = newNombreProducto ? newNombreProducto.trim().toUpperCase() : null;
 
-        // --- Leer la fila de stock correspondiente
-        const [stockRows] = await pool.query(
+      // --- Leer la fila de stock correspondiente
+      const [stockRows] = await pool.query(
         'SELECT * FROM stock_inventario WHERE id_insumo = ? AND id_sede = ? LIMIT 1',
         [id_insumo, id_sede]
-         );
-         let stockRow = stockRows.length ? stockRows[0] : null;
+      );
+      let stockRow = stockRows.length ? stockRows[0] : null;
 
-          const diffCantidad = newCantidad - oldCantidad; 
-          const diffSalida   = newSalida - oldSalida; 
-   
-        if (stockRow) { 
+      const diffCantidad = newCantidad - oldCantidad;
+      const diffSalida = newSalida - oldSalida;
+
+      if (stockRow) {
         // Actualizar cantidad con cantidad y salida 
-        const nuevaCantidadActual = stockRow.cantidad_actual + diffCantidad - diffSalida; 
-        if (nuevaCantidadActual <= 0) { 
-        await pool.query( 
-        'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?', 
-        [stockRow.id_stock_inventario, id_sede] 
-        ); 
-       } else { 
-           await pool.query( 
-           'UPDATE stock_inventario SET cantidad_actual = ?, updatedAt = NOW() WHERE id_stock_inventario = ? AND id_sede = ?', 
-           [nuevaCantidadActual, stockRow.id_stock_inventario, id_sede] 
-         ); 
-       } 
-        } else { 
+        const nuevaCantidadActual = stockRow.cantidad_actual + diffCantidad - diffSalida;
+        if (nuevaCantidadActual <= 0) {
+          await pool.query(
+            'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
+            [stockRow.id_stock_inventario, id_sede]
+          );
+        } else {
+          await pool.query(
+            'UPDATE stock_inventario SET cantidad_actual = ?, updatedAt = NOW() WHERE id_stock_inventario = ? AND id_sede = ?',
+            [nuevaCantidadActual, stockRow.id_stock_inventario, id_sede]
+          );
+        }
+      } else {
         // Crear fila nueva si no existía 
-        const cantidadInicial = newCantidad - newSalida; 
-        await pool.query( 
-        'INSERT INTO stock_inventario (id_insumo, nombre_producto, id_laboratorio, cantidad_actual, id_sede, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, NOW(), NOW())', 
-        [id_insumo, newNombreProducto, newLab, cantidadInicial, id_sede] 
-       ); 
-      } 
+        const cantidadInicial = newCantidad - newSalida;
+        await pool.query(
+          'INSERT INTO stock_inventario (id_insumo, nombre_producto, id_laboratorio, cantidad_actual, id_sede, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+          [id_insumo, newNombreProducto, newLab, cantidadInicial, id_sede]
+        );
+      }
 
       // --- Helper para normalizar fecha "YYYY-MM-DD"
       const toYMD = (v) => {
-      if (!v) return null;
-      if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-      const d = new Date(v);
-      if (isNaN(d.getTime())) return null;
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${dd}`;
-  };
+        if (!v) return null;
+        if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+        const d = new Date(v);
+        if (isNaN(d.getTime())) return null;
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+      };
 
       const todayYMD = toYMD(new Date());
       const terminoYMD = toYMD(newTerminoRaw);
 
       // --- Solo si hay fecha de término y stockRow
       if (terminoYMD && stockRow) {
-      // Si la fecha de término es hoy, eliminar stock
-      if (terminoYMD === todayYMD) {
-      await pool.query(
-        'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
-        [stockRow.id_stock_inventario, id_sede]
-      );
-     }
-   }
+        // Si la fecha de término es hoy, eliminar stock
+        if (terminoYMD === todayYMD) {
+          await pool.query(
+            'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
+            [stockRow.id_stock_inventario, id_sede]
+          );
+        }
+      }
       // --- Actualizar salida y cantidad en Kardex 
-      await pool.query( 
-      'UPDATE insumos SET cantidad = ?, salida = ? WHERE id_insumo = ? AND id_sede = ?', 
-      [newCantidad, newSalida, id_insumo, id_sede] 
-     ); 
+      await pool.query(
+        'UPDATE insumos SET cantidad = ?, salida = ? WHERE id_insumo = ? AND id_sede = ?',
+        [newCantidad, newSalida, id_insumo, id_sede]
+      );
 
-     } catch (errAdjust) {
+    } catch (errAdjust) {
       console.error('ERROR ajustando stock en PUT:', errAdjust);
-     }
+    }
 
     res.json({ message: 'Registro actualizado exitosamente', result });
-    } catch (error) {
-     res.status(500).json({ error: error.message });
-    }
-   });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Buscar un insumo por ID (con joins y nombres descriptivos)
 
-router.get('/:id_insumo',verificarToken, async (req, res) => {
-    console.log('id_sede backend:', req.usuario.id_sede);
+router.get('/:id_insumo', verificarToken, async (req, res) => {
+  console.log('id_sede backend:', req.usuario.id_sede);
   const { id_insumo } = req.params;
 
-     const id_sede = req.usuario.id_sede;
+  const id_sede = req.usuario.id_sede;
 
   try {
     const [result] = await pool.query(
@@ -626,10 +640,10 @@ router.get('/:id_insumo',verificarToken, async (req, res) => {
 
 
 // Obtener todos los insumos con nombres (no IDs)
-router.get('/',verificarToken, async (req, res) => {
-    console.log('id_sede backend:', req.usuario?.id_sede);
+router.get('/', verificarToken, async (req, res) => {
+  console.log('id_sede backend:', req.usuario?.id_sede);
   try {
-          const id_sede = req.usuario.id_sede;
+    const id_sede = req.usuario.id_sede;
 
     const [insumos] = await pool.query(`
       SELECT
@@ -717,6 +731,8 @@ router.delete('/:id_insumo', verificarToken, async (req, res) => {
 
     const insumo = insumos[0];
     const cantidad = Number(insumo.cantidad || 0);
+    const salida = Number(insumo.salida || 0);
+    const cantidadRestanteInsumo = Math.max(cantidad - salida, 0); // ✅ lo que realmente queda disponible
     const idNombre = insumo.id_nombre_del_insumo;
     const idLab = insumo.id_laboratorio;
 
@@ -731,25 +747,23 @@ router.delete('/:id_insumo', verificarToken, async (req, res) => {
       // 3) Buscar todos los registros de stock para este insumo
       const [stockRows] = await pool.query(
         `SELECT * FROM stock_inventario
-         WHERE nombre_producto = ? AND id_laboratorio = ? AND id_sede = ?
-         ORDER BY id_stock_inventario ASC`,
+       WHERE nombre_producto = ? AND id_laboratorio = ? AND id_sede = ?
+       ORDER BY id_stock_inventario ASC`,
         [nombreProducto, idLab, id_sede]
       );
 
-      let cantidadRestante = cantidad;
+      let cantidadRestante = cantidadRestanteInsumo; // ✅ corregido
 
       for (const stock of stockRows) {
         const stockActual = Number(stock.cantidad_actual || 0);
 
         if (stockActual <= cantidadRestante) {
-          // Si la cantidad del stock es menor o igual a la que hay que eliminar → eliminar todo el registro
           await pool.query(
             'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
             [stock.id_stock_inventario, id_sede]
           );
           cantidadRestante -= stockActual;
         } else {
-          // Si la cantidad del stock es mayor → restar lo que toca y salir
           const nuevoStock = stockActual - cantidadRestante;
           await pool.query(
             'UPDATE stock_inventario SET cantidad_actual = ? WHERE id_stock_inventario = ? AND id_sede = ?',
@@ -759,28 +773,31 @@ router.delete('/:id_insumo', verificarToken, async (req, res) => {
           break;
         }
       }
+
+      // 4) Verificar si queda stock total y limpiar si está en 0
+      const [verificarStock] = await pool.query(
+        `SELECT SUM(cantidad_actual) AS total FROM stock_inventario
+       WHERE nombre_producto = ? AND id_laboratorio = ? AND id_sede = ?`,
+        [nombreProducto, idLab, id_sede]
+      );
+
+      const totalStock = Number(verificarStock[0].total || 0);
+      if (totalStock <= 0) {
+        await pool.query(
+          `DELETE FROM stock_inventario
+         WHERE nombre_producto = ? AND id_laboratorio = ? AND id_sede = ?`,
+          [nombreProducto, idLab, id_sede]
+        );
+      }
     }
 
-   // 4) Registrar auditoría ANTES de eliminar el kardex
-const [laboRows] = await pool.query(
-  'SELECT nombre FROM laboratorio WHERE id_laboratorio = ? AND id_sede = ?',
-  [idLab, id_sede]
-);
-const oldNombreCleanb = laboRows.length ? laboRows[0].nombre : 'Sin laboratorio';
+    // 5) Registrar auditoría
+    await registrarAuditoria('insumos', id_insumo, 'eliminó', req.usuario);
 
+    // 6) Eliminar el registro del insumo
+    await pool.query('DELETE FROM insumos WHERE id_insumo = ? AND id_sede = ?', [id_insumo, id_sede]);
 
-// ✅ Registrar auditoría con acción simple ("eliminó")
-await registrarAuditoria(
-  'insumos',
-  id_insumo,
-  'eliminó',
-  req.usuario
-);
-
-// 5) Eliminar registro del kardex
-await pool.query('DELETE FROM insumos WHERE id_insumo = ? AND id_sede = ?', [id_insumo, id_sede]);
-
-res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
+    res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({

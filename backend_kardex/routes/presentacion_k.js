@@ -1,3 +1,11 @@
+/**
+ * Rutas para la gestión de presentaciones de reactivos.
+ * Permite crear, actualizar, consultar y eliminar presentaciones 
+ * asociadas a la sede del usuario autenticado.
+ * Ës de reactivos
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

@@ -1,3 +1,9 @@
+/**
+ * Rutas para la gestión de los nombres de reactivos.
+ * Permite crear, actualizar, obtener y eliminar nombres de reactivos asociados a la sede del usuario autenticado.
+ * Todas las operaciones están protegidas mediante verificación de token.
+ */
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

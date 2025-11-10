@@ -1,3 +1,14 @@
+/**
+ * 🔐 usuarios.routes.js
+ * Módulo de rutas para la gestión completa de usuarios.
+ * Incluye registro, inicio/cierre de sesión, verificación de cuenta,
+ * recuperación y cambio de contraseña, así como CRUD básico de usuarios.
+ * También utiliza JWT para autenticación y Nodemailer para envío de correos.
+ *El correo que envía las notificaciones puede dejar de funcionar después de un tiempo. En ese caso, se puede reemplazar o reconfigurar,
+   utilizando una clave especial generada por Google, la cual se crea desde la cuenta para permitir el envío seguro de correos del sistema.
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -134,8 +145,6 @@ router.post('/verificar', async (req, res) => {
         await pool.query('UPDATE usuarios SET verificado = 1, codigo_verificacion = NULL WHERE correo= ?', [correo]);
         res.json({message: 'Cuenta verificada correctamente'});
 });
-
-
 
 // cerra sesion 
 
@@ -362,8 +371,6 @@ router.delete('/:id_usuario', async (req, res) => {
         });
     }
 });
-
-
 
 module.exports = router;
 

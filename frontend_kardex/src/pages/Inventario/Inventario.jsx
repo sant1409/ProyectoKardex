@@ -177,6 +177,7 @@ export default function Inventario() {
               )}
               <strong>{i.nombre}</strong>
               <span>Fecha de recepcion: {formatearFecha(i.fecha)}</span>
+              <span>Cantidad actual: {i.cantidad ?? 0}</span>
             </div>
           ))}
 
@@ -212,6 +213,7 @@ export default function Inventario() {
               )}
               <strong>{i.nombre}</strong>
               <span>Fecha de recepción: {formatearFecha(i.fecha_recepcion)}</span>
+              <span>Cantidad actual: {i.cantidad ?? 0}</span>
             </div>
           ))}
       </div>

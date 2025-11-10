@@ -1,3 +1,11 @@
+/**
+ * 🔹 sede.routes.js
+ * Rutas para gestionar las sedes del sistema.
+ * Permite crear, listar y obtener sedes, así como asignar una sede
+ * al usuario autenticado según su sesión o token.
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

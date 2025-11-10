@@ -1,15 +1,15 @@
 /**
  * kardex.js
  * ============================================================
- * Módulo encargado de gestionar el Kardex y el control del inventario.
+ * Módulo encargado de gestionar el Kardex y el control del inventario + stock inventario.
  * 
  * Este archivo implementa toda la lógica relacionada con el registro,
  * actualización y control del stock de los reactivos o insumos
  * dentro del sistema. Cada operación sobre el Kardex (crear, modificar
- * o eliminar) impacta directamente en el módulo de `stock_inventario`.
+ * o eliminar) impacta directamente en el módulo de `stock_inventario y en inventario`.
  *
  * 🔹 Funcionalidades principales:
- *  - Registro de nuevos reactivos o insumos.
+ *  - Registro de nuevos reactivos.
  *  - Consulta general o filtrada de Kardex por sede.
  *  - Modificación de reactivos existentes.
  *  - Eliminación segura de registros con ajuste automático en el stock.
@@ -49,7 +49,7 @@
  * ⚙️ Ejemplo de flujo:
  *  Usuario autenticado crea un reactivo → 
  *  se inserta en `kardex` → 
- *  se refleja en `stock_inventario` →
+ *  se refleja en `stock_inventario y en inventario` →
  *  las modificaciones futuras ajustan cantidades y auditoría.
  *
  * 📍 Módulo crítico:
@@ -104,7 +104,7 @@ async function obtenerOcrearFK(pool, tabla, columna, valor, id_sede) {
 }
 
 //  Crear kardex
-router.post('/',verificarToken, async (req, res) => {
+router.post('/', verificarToken, async (req, res) => {
   try {
     console.log("DEBUG req.body recibido:", req.body);
 
@@ -160,9 +160,16 @@ router.post('/',verificarToken, async (req, res) => {
     const idProveedor = await obtenerOcrearFK(pool, 'proveedor_k', 'proveedor_k', id_proveedor_k, id_sede);
     const idClasificacionRiesgo = await obtenerOcrearFK(pool, 'clasificacion_riesgo', 'clasificacion_riesgo', id_clasificacion_riesgo, id_sede);
 
+    // ❌ Restricción: no permitir 'salida' en la creación
+    if (salida !== undefined && salida !== null && Number(salida) > 0) {
+      return res.status(400).json({
+        error: "No se puede asignar una salida al crear un reactivo. La salida solo puede registrarse al actualizar un reactivo."
+      });
+    }
+
     //  Insertar kardex
     const [result] = await pool.query(
-      
+
       `INSERT INTO kardex (
         fecha_recepcion, temperatura_llegada, maximo, minimo, cantidad, salida, saldo, id_nombre_insumo,
         id_presentacion_k, id_casa_comercial, id_proveedor_k, lote, fecha_vencimiento, registro_invima, expediente_invima,
@@ -195,7 +202,7 @@ router.post('/',verificarToken, async (req, res) => {
       [idNombreInsumo, id_sede]
     );
     const nombre_producto = productoRow.length > 0 ? productoRow[0].nombre_producto : null;
-   
+
     const cantidadNum = Number(cantidad);
     const casaId = Number(idCasacomercial);
 
@@ -217,7 +224,7 @@ router.post('/',verificarToken, async (req, res) => {
 
 
 // Buscar kardex (con joins completos y filtros por sede)
-router.get('/buscar_kardex',verificarToken, async (req, res) => {
+router.get('/buscar_kardex', verificarToken, async (req, res) => {
   const { q, nombre, casa_comercial, lote, desde, hasta } = req.query;
   const id_sede = req.usuario.id_sede;
 
@@ -329,215 +336,223 @@ router.get('/buscar_kardex',verificarToken, async (req, res) => {
 
 // Modificar kardex
 function emptyToNull(val) {
-   return val === undefined || val === null || (typeof val === 'string' && val.trim() === '') ? null : val;
- }
+  return val === undefined || val === null || (typeof val === 'string' && val.trim() === '') ? null : val;
+}
 
-router.put('/:id_kardex',verificarToken, async (req, res) => {
-    const {
-        fecha_recepcion, temperatura_llegada, maximo, minimo, cantidad, salida, saldo, id_nombre_insumo,
-        id_presentacion_k, id_casa_comercial, id_proveedor_k, lote, fecha_vencimiento, registro_invima, expediente_invima,
-        estado_revision, temperatura_almacenamiento, id_clasificacion_riesgo, principio_activo, forma_farmaceutica,
-        concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, factura,
-        costo_general, costo_caja, costo_prueba, iva, consumible, mes_registro,	lab_sas,  usuarioId
-    } = req.body;
+router.put('/:id_kardex', verificarToken, async (req, res) => {
+  const {
+    fecha_recepcion, temperatura_llegada, maximo, minimo, cantidad, salida, saldo, id_nombre_insumo,
+    id_presentacion_k, id_casa_comercial, id_proveedor_k, lote, fecha_vencimiento, registro_invima, expediente_invima,
+    estado_revision, temperatura_almacenamiento, id_clasificacion_riesgo, principio_activo, forma_farmaceutica,
+    concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, factura,
+    costo_general, costo_caja, costo_prueba, iva, consumible, mes_registro, lab_sas, usuarioId
+  } = req.body;
 
-        const { id_kardex } = req.params;
-        const id_sede = req.usuario.id_sede;
-    
-    //validar el formato fecha
-    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!fecha_recepcion || !fechaRegex.test(fecha_recepcion)) {
-        return res.status(400).json({ error: 'La fecha de recepción debe tener el formato YYYY-MM-DD' });
+  const { id_kardex } = req.params;
+  const id_sede = req.usuario.id_sede;
+
+  //validar el formato fecha
+  const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!fecha_recepcion || !fechaRegex.test(fecha_recepcion)) {
+    return res.status(400).json({ error: 'La fecha de recepción debe tener el formato YYYY-MM-DD' });
+  }
+
+  //Validar fecha vto
+  if (!fecha_vencimiento || !fechaRegex.test(fecha_vencimiento)) {
+    return res.status(400).json({ errror: 'La fecha de vencimineto debe tener el formato YYYY-MM-DD' })
+  }
+
+  // Validar lab/ sas
+  if (!["lab", "sas"].includes(lab_sas)) {
+    return res.status(400).json({ error: "El campo solo puede ser 'lab' o 'sas'." });
+  }
+
+  //Validar el campo reactivo 
+  if (!id_nombre_insumo || (typeof id_nombre_insumo === "string" && id_nombre_insumo.trim() === "")) {
+    return res.status(400).json({ error: "El nombre del reactivo es obligatorio" });
+  }
+
+  const fkFields = {
+    id_nombre_insumo: emptyToNull(id_nombre_insumo),
+    id_presentacion_k: emptyToNull(id_presentacion_k),
+    id_casa_comercial: emptyToNull(id_casa_comercial),
+    id_proveedor_k: emptyToNull(id_proveedor_k),
+    id_clasificacion_riesgo: emptyToNull(id_clasificacion_riesgo)
+  };
+
+  try {
+    // --- BLOQUE A: leer registro viejo (para comparar después)
+    const [oldRows] = await pool.query('SELECT * FROM kardex WHERE id_kardex = ? AND id_sede = ?', [id_kardex, id_sede]);
+    const oldKardex = oldRows.length > 0 ? oldRows[0] : null;
+    if (!oldKardex) return res.status(404).json({ message: 'Reactivo no encontrado con ese ID' });
+
+    //Validar FK solo si no es null
+    for (const [tabla, valor] of Object.entries(fkFields)) {
+      if (valor !== null) {
+        //el nombre de tabla en validarFKObligatorio no debe llevar "id_"
+        const tablaSinId = tabla.replace(/^id_/, '');
+
+        fkFields[tabla] = await obtenerOcrearFK(pool, tablaSinId, tablaSinId, valor, id_sede);
+      }
     }
 
-    //Validar fecha vto
-     if (!fecha_vencimiento || ! fechaRegex.test(fecha_vencimiento)) {
-        return res.status(400).json({errror:  'La fecha de vencimineto debe tener el formato YYYY-MM-DD'})
-            }
+    // --- Calcular nueva cantidad disponible ANTES del update general
+    let nuevaCantidad = Number(cantidad || 0) - Number(salida || 0);
+    if (nuevaCantidad < 0) nuevaCantidad = 0;
 
-      // Validar lab/ sas
-     if (!["lab", "sas"].includes(lab_sas)) {
-        return res.status(400).json({error: "El campo solo puede ser 'lab' o 'sas'."});
-        }
-         
-      //Validar el campo reactivo 
-      if (!id_nombre_insumo || (typeof id_nombre_insumo === "string" && id_nombre_insumo.trim() === "")) {
-        return res.status(400).json({ error: "El nombre del reactivo es obligatorio" });
-            }
+    // reemplazamos la variable cantidad por la nueva
+    const cantidadFinal = nuevaCantidad;
 
-     const fkFields = {
-     id_nombre_insumo: emptyToNull(id_nombre_insumo),
-     id_presentacion_k: emptyToNull(id_presentacion_k),
-     id_casa_comercial: emptyToNull(id_casa_comercial),
-     id_proveedor_k: emptyToNull(id_proveedor_k),
-     id_clasificacion_riesgo: emptyToNull(id_clasificacion_riesgo)
-   };
-
-      try { 
-        // --- BLOQUE A: leer registro viejo (para comparar después)
-         const [oldRows] = await pool.query('SELECT * FROM kardex WHERE id_kardex = ? AND id_sede = ?', [id_kardex, id_sede]);
-         const oldKardex = oldRows.length > 0 ? oldRows[0] : null;
-         if (!oldKardex) return res.status(404).json({ message: 'Reactivo no encontrado con ese ID' });
-
-      //Validar FK solo si no es null
-     for (const [tabla, valor] of Object.entries(fkFields)) {
-       if (valor !== null) {
-          //el nombre de tabla en validarFKObligatorio no debe llevar "id_"
-         const tablaSinId = tabla.replace(/^id_/, '');
-
-         fkFields[tabla] = await obtenerOcrearFK(pool, tablaSinId, tablaSinId, valor, id_sede);
-       }
-     }
-        const [result] = await pool.query(
-            `UPDATE kardex SET
+    const [result] = await pool.query(
+      `UPDATE kardex SET
                 fecha_recepcion = ?, temperatura_llegada = ?, maximo = ?, minimo = ?, cantidad = ?, salida = ?, saldo = ?, id_nombre_insumo = ?,
                 id_presentacion_k = ?, id_casa_comercial = ?, id_proveedor_k = ?, lote = ?, fecha_vencimiento = ?, registro_invima = ?, expediente_invima = ?,
                 estado_revision = ?, temperatura_almacenamiento = ?, id_clasificacion_riesgo = ?, principio_activo = ?, forma_farmaceutica = ?,
                 concentracion = ?, unidad_medida = ?, fecha_salida = ?, fecha_inicio = ?, fecha_terminacion = ?, area = ?, factura = ?,
                 costo_general = ?, costo_caja = ?, costo_prueba = ?, iva = ?, consumible = ?, mes_registro = ?,	lab_sas = ?,	 usuarioId = ? WHERE id_kardex = ? And id_sede = ?`,
-            [
-                fecha_recepcion, temperatura_llegada, maximo, minimo, cantidad, salida, saldo, fkFields.id_nombre_insumo,
-                fkFields.id_presentacion_k, fkFields.id_casa_comercial, fkFields.id_proveedor_k, lote, fecha_vencimiento, registro_invima, expediente_invima,
-                estado_revision, temperatura_almacenamiento, fkFields.id_clasificacion_riesgo, principio_activo, forma_farmaceutica,
-                concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, factura,
-                costo_general, costo_caja, costo_prueba, iva, consumible,  mes_registro,	lab_sas,	usuarioId,  id_kardex, id_sede
-            ]
-        );
-             const [usuarioResult ] = await pool.query(
-                   'SELECT nombre FROM usuarios WHERE id_usuario = ? AND id_sede = ?',
-                   [usuarioId, id_sede]
-            );
-             const nombreUsuario = usuarioResult.length > 0 ? usuarioResult[0].nombre: 'Desconocido';
-             await registrarAuditoria('kardex', id_kardex, 'modificó', req.usuario);
+      [
+        fecha_recepcion, temperatura_llegada, maximo, minimo, cantidadFinal, salida, saldo, fkFields.id_nombre_insumo,
+        fkFields.id_presentacion_k, fkFields.id_casa_comercial, fkFields.id_proveedor_k, lote, fecha_vencimiento, registro_invima, expediente_invima,
+        estado_revision, temperatura_almacenamiento, fkFields.id_clasificacion_riesgo, principio_activo, forma_farmaceutica,
+        concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, factura,
+        costo_general, costo_caja, costo_prueba, iva, consumible, mes_registro, lab_sas, usuarioId, id_kardex, id_sede
+      ]
+    );
+    const [usuarioResult] = await pool.query(
+      'SELECT nombre FROM usuarios WHERE id_usuario = ? AND id_sede = ?',
+      [usuarioId, id_sede]
+    );
+    const nombreUsuario = usuarioResult.length > 0 ? usuarioResult[0].nombre : 'Desconocido';
+    await registrarAuditoria('kardex', id_kardex, 'modificó', req.usuario);
 
-         //Notificar fecha de salida
-         await procesarSalidas();
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Registro no encontrado con ese ID' });
-        }
-        
-         try { 
-         // --- Valores antiguos 
-         const oldCantidad = Number(oldKardex?.cantidad || 0); 
-         const oldSalida = Number(oldKardex?.salida || 0); 
-         const oldIdNombre = oldKardex?.id_nombre_insumo; 
-         const oldCasa = oldKardex?.id_casa_comercial; 
-         const oldFechaTermRaw = oldKardex?.fecha_terminacion; 
-  
-         // --- Valores nuevos (si no vienen, usar viejo) 
-         const newCantidad = (cantidad === undefined || cantidad === null || cantidad === '') ? oldCantidad: Number(cantidad); 
-         const newSalida = (salida === undefined || salida === null || salida === '') ? oldSalida : Number(salida); 
-         const newIdNombre = fkFields.id_nombre_insumo ?? oldIdNombre; 
-         const newCasa = fkFields.id_casa_comercial ?? oldCasa; 
-         const newFechaTermRaw = fecha_terminacion 
-  
-         // --- Helper para parsear fechas 
-         const parseDate = (v) => { 
-          if (!v) return null; 
-         const d = (v instanceof Date) ? v : new Date(v); 
-          return isNaN(d.getTime()) ? null : d; 
-          }; 
-  
-         const oldDate = parseDate(oldFechaTermRaw); 
-         const newTerminoDate = parseDate(newFechaTermRaw); 
-  
-         // --- Obtener nombres legibles 
-         const [oldNameRow] = await pool.query( 
-         'SELECT nombre AS nombre_producto FROM nombre_insumo WHERE id_nombre_insumo = ? AND id_sede = ?', 
-          [oldIdNombre, id_sede] 
-          ); 
-         const oldNombreProducto = oldNameRow.length ? oldNameRow[0].nombre_producto : null; 
-  
-         const [newNameRow] = await pool.query( 
-         'SELECT nombre AS nombre_producto FROM nombre_insumo WHERE id_nombre_insumo = ? AND id_sede = ?', 
-          [newIdNombre, id_sede] 
-          ); 
-          const newNombreProducto = newNameRow.length ? newNameRow[0].nombre_producto : null; 
-  
-         // --- Normalización 
-         const oldNombreClean = oldNombreProducto ? oldNombreProducto.trim().toUpperCase() : null; 
-         const newNombreClean = newNombreProducto ? newNombreProducto.trim().toUpperCase() : null; 
-  
-         // --- Leer la fila de stock correspondiente 
-         const [stockRows] = await pool.query( 
-         'SELECT * FROM stock_inventario WHERE id_kardex = ? AND id_sede = ? LIMIT 1', 
-          [id_kardex, id_sede] 
-          ); 
-  
-         let stockRow = stockRows.length ? stockRows[0] : null; 
-         // --- Diferencias 
-          const diffCantidad = newCantidad - oldCantidad; 
-          const diffSalida   = newSalida - oldSalida; 
-   
-          if (stockRow) { 
-         // Actualizar cantidad con cantidad y salida 
-          const nuevaCantidadActual = stockRow.cantidad_actual + diffCantidad - diffSalida; 
-           if (nuevaCantidadActual <= 0) { 
-           await pool.query( 
-           'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?', 
-           [stockRow.id_stock_inventario, id_sede] 
-          ); 
-       } else { 
-        await pool.query( 
-        'UPDATE stock_inventario SET cantidad_actual = ?, updatedAt = NOW() WHERE id_stock_inventario = ? AND id_sede = ?', 
-        [nuevaCantidadActual, stockRow.id_stock_inventario, id_sede] 
-      ); 
-      } 
-        } else { 
-      // Crear fila nueva si no existía 
-       const cantidadInicial = newCantidad - newSalida; 
-        await pool.query( 
-         'INSERT INTO stock_inventario (id_kardex, nombre_producto, id_casa_comercial, cantidad_actual, id_sede, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, NOW(), NOW())', 
-           [id_kardex, newNombreProducto, newCasa, cantidadInicial, id_sede] 
-         ); 
-       } 
+    //Notificar fecha de salida
+    await procesarSalidas();
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Registro no encontrado con ese ID' });
+    }
 
-  
-       // --- Helper para normalizar fecha "YYYY-MM-DD" 
-        const toYMD = (v) => { 
-        if (!v) return null; 
-        if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v; 
-        const d = new Date(v); 
-        if (isNaN(d.getTime())) return null; 
-        const y = d.getFullYear(); 
-        const m = String(d.getMonth() + 1).padStart(2, '0'); 
-        const dd = String(d.getDate()).padStart(2, '0'); 
-         return `${y}-${m}-${dd}`; 
+    try {
+      // --- Valores antiguos 
+      const oldCantidad = Number(oldKardex?.cantidad || 0);
+      const oldSalida = Number(oldKardex?.salida || 0);
+      const oldIdNombre = oldKardex?.id_nombre_insumo;
+      const oldCasa = oldKardex?.id_casa_comercial;
+      const oldFechaTermRaw = oldKardex?.fecha_terminacion;
+
+      // --- Valores nuevos (si no vienen, usar viejo) 
+      const newCantidad = (cantidad === undefined || cantidad === null || cantidad === '') ? oldCantidad : Number(cantidad);
+      const newSalida = (salida === undefined || salida === null || salida === '') ? oldSalida : Number(salida);
+      const newIdNombre = fkFields.id_nombre_insumo ?? oldIdNombre;
+      const newCasa = fkFields.id_casa_comercial ?? oldCasa;
+      const newFechaTermRaw = fecha_terminacion
+
+      // --- Helper para parsear fechas 
+      const parseDate = (v) => {
+        if (!v) return null;
+        const d = (v instanceof Date) ? v : new Date(v);
+        return isNaN(d.getTime()) ? null : d;
       };
 
-        const todayYMD = toYMD(new Date()); 
-        const terminoYMD = toYMD(newFechaTermRaw); 
-   
-        // --- Solo si hay fecha de término y stockRow 
-        if (terminoYMD && stockRow) { 
+      const oldDate = parseDate(oldFechaTermRaw);
+      const newTerminoDate = parseDate(newFechaTermRaw);
+
+      // --- Obtener nombres legibles 
+      const [oldNameRow] = await pool.query(
+        'SELECT nombre AS nombre_producto FROM nombre_insumo WHERE id_nombre_insumo = ? AND id_sede = ?',
+        [oldIdNombre, id_sede]
+      );
+      const oldNombreProducto = oldNameRow.length ? oldNameRow[0].nombre_producto : null;
+
+      const [newNameRow] = await pool.query(
+        'SELECT nombre AS nombre_producto FROM nombre_insumo WHERE id_nombre_insumo = ? AND id_sede = ?',
+        [newIdNombre, id_sede]
+      );
+      const newNombreProducto = newNameRow.length ? newNameRow[0].nombre_producto : null;
+
+      // --- Normalización 
+      const oldNombreClean = oldNombreProducto ? oldNombreProducto.trim().toUpperCase() : null;
+      const newNombreClean = newNombreProducto ? newNombreProducto.trim().toUpperCase() : null;
+
+      // --- Leer la fila de stock correspondiente 
+      const [stockRows] = await pool.query(
+        'SELECT * FROM stock_inventario WHERE id_kardex = ? AND id_sede = ? LIMIT 1',
+        [id_kardex, id_sede]
+      );
+
+      let stockRow = stockRows.length ? stockRows[0] : null;
+      // --- Diferencias 
+      const diffCantidad = newCantidad - oldCantidad;
+      const diffSalida = newSalida - oldSalida;
+
+      if (stockRow) {
+        // Actualizar cantidad con cantidad y salida 
+        const nuevaCantidadActual = stockRow.cantidad_actual + diffCantidad - diffSalida;
+        if (nuevaCantidadActual <= 0) {
+          await pool.query(
+            'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
+            [stockRow.id_stock_inventario, id_sede]
+          );
+        } else {
+          await pool.query(
+            'UPDATE stock_inventario SET cantidad_actual = ?, updatedAt = NOW() WHERE id_stock_inventario = ? AND id_sede = ?',
+            [nuevaCantidadActual, stockRow.id_stock_inventario, id_sede]
+          );
+        }
+      } else {
+        // Crear fila nueva si no existía 
+        const cantidadInicial = newCantidad - newSalida;
+        await pool.query(
+          'INSERT INTO stock_inventario (id_kardex, nombre_producto, id_casa_comercial, cantidad_actual, id_sede, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+          [id_kardex, newNombreProducto, newCasa, cantidadInicial, id_sede]
+        );
+      }
+
+
+      // --- Helper para normalizar fecha "YYYY-MM-DD" 
+      const toYMD = (v) => {
+        if (!v) return null;
+        if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+        const d = new Date(v);
+        if (isNaN(d.getTime())) return null;
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+      };
+
+      const todayYMD = toYMD(new Date());
+      const terminoYMD = toYMD(newFechaTermRaw);
+
+      // --- Solo si hay fecha de término y stockRow 
+      if (terminoYMD && stockRow) {
         // Si la fecha de término es hoy, eliminar stock 
-        if (terminoYMD === todayYMD) { 
-         await pool.query( 
-        'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?', 
-        [stockRow.id_stock_inventario, id_sede] 
-      ); 
-    } 
-  } 
-   
-  // --- Actualizar salida y cantidad en Kardex 
-  await pool.query( 
-    'UPDATE kardex SET cantidad = ?, salida = ? WHERE id_kardex = ? AND id_sede = ?', 
-    [newCantidad, newSalida, id_kardex, id_sede ] 
-  ); 
-} catch (errAdjust) { 
-  console.error('ERROR ajustando stock en PUT:', errAdjust); 
-} 
- 
-res.json({ message: 'Registro actualizado exitosamente', result }); 
- 
-} catch (error) { 
-  res.status(500).json({ error: error.message }); 
-} 
-}); 
+        if (terminoYMD === todayYMD) {
+          await pool.query(
+            'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
+            [stockRow.id_stock_inventario, id_sede]
+          );
+        }
+      }
+
+      // --- Actualizar salida y cantidad en Kardex 
+      await pool.query(
+        'UPDATE kardex SET cantidad = ?, salida = ? WHERE id_kardex = ? AND id_sede = ?',
+        [newCantidad, newSalida, id_kardex, id_sede]
+      );
+    } catch (errAdjust) {
+      console.error('ERROR ajustando stock en PUT:', errAdjust);
+    }
+
+    res.json({ message: 'Registro actualizado exitosamente', result });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 //Buscar kardex por id
-router.get('/:id_kardex',verificarToken, async (req, res) => {
+router.get('/:id_kardex', verificarToken, async (req, res) => {
   const { id_kardex } = req.params;
   const id_sede = req.usuario.id_sede;
   try {
@@ -625,9 +640,9 @@ router.get('/:id_kardex',verificarToken, async (req, res) => {
 
 
 // Obtener todos los registros de kardex con nombres (no IDs)
-router.get('/',verificarToken, async (req, res) => {
+router.get('/', verificarToken, async (req, res) => {
   try {
-     const id_sede = req.usuario.id_sede;
+    const id_sede = req.usuario.id_sede;
     const [registros] = await pool.query(`
       SELECT
         k.id_kardex,
@@ -699,8 +714,8 @@ router.get('/',verificarToken, async (req, res) => {
   }
 });
 
-  // Eliminar un registro del kardex
-  router.delete('/:id_kardex', verificarToken, async (req, res) => {
+// Eliminar un registro del kardex
+router.delete('/:id_kardex', verificarToken, async (req, res) => {
   const { id_kardex } = req.params;
   const { usuarioId } = req.body;
   const id_sede = req.usuario.id_sede;
@@ -717,6 +732,8 @@ router.get('/',verificarToken, async (req, res) => {
 
     const registro = kardex[0];
     const cantidad = Number(registro.cantidad || 0);
+    const salida = Number(registro.salida || 0);
+    const cantidadRestanteKardex = Math.max(cantidad - salida, 0); // ✅ la que realmente queda disponible
     const idNombre = registro.id_nombre_insumo;
     const idCasa = registro.id_casa_comercial;
 
@@ -731,25 +748,25 @@ router.get('/',verificarToken, async (req, res) => {
       // 3) Buscar todos los registros de stock para este producto
       const [stockRows] = await pool.query(
         `SELECT * FROM stock_inventario
-         WHERE nombre_producto = ? AND id_casa_comercial = ? AND id_sede = ?
-         ORDER BY id_stock_inventario ASC`,
+       WHERE nombre_producto = ? AND id_casa_comercial = ? AND id_sede = ?
+       ORDER BY id_stock_inventario ASC`,
         [nombreProducto, idCasa, id_sede]
       );
 
-      let cantidadRestante = cantidad;
+      let cantidadRestante = cantidadRestanteKardex; // ✅ solo se descuenta lo que realmente quedaba
 
       for (const stock of stockRows) {
         const stockActual = Number(stock.cantidad_actual || 0);
 
         if (stockActual <= cantidadRestante) {
-          // Si la cantidad del stock es menor o igual a la que hay que eliminar → eliminar todo el registro
+          // Si el stock es menor o igual → eliminar el registro completo
           await pool.query(
             'DELETE FROM stock_inventario WHERE id_stock_inventario = ? AND id_sede = ?',
             [stock.id_stock_inventario, id_sede]
           );
           cantidadRestante -= stockActual;
         } else {
-          // Si la cantidad del stock es mayor → restar lo que toca y salir
+          // Si el stock es mayor → solo restar la cantidad que quedaba
           const nuevoStock = stockActual - cantidadRestante;
           await pool.query(
             'UPDATE stock_inventario SET cantidad_actual = ? WHERE id_stock_inventario = ? AND id_sede = ?',
@@ -759,30 +776,31 @@ router.get('/',verificarToken, async (req, res) => {
           break;
         }
       }
+
+      // Si después de descontar todo, el stock quedó en 0 → asegurar limpieza
+      const [verificarStock] = await pool.query(
+        `SELECT SUM(cantidad_actual) AS total FROM stock_inventario
+       WHERE nombre_producto = ? AND id_casa_comercial = ? AND id_sede = ?`,
+        [nombreProducto, idCasa, id_sede]
+      );
+
+      const totalStock = Number(verificarStock[0].total || 0);
+      if (totalStock <= 0) {
+        await pool.query(
+          `DELETE FROM stock_inventario
+         WHERE nombre_producto = ? AND id_casa_comercial = ? AND id_sede = ?`,
+          [nombreProducto, idCasa, id_sede]
+        );
+      }
     }
 
-   // 4) Registrar auditoría ANTES de eliminar el kardex
-const [casaRows] = await pool.query(
-  'SELECT nombre FROM casa_comercial WHERE id_casa_comercial = ? AND id_sede = ?',
-  [idCasa, id_sede]
-);
-const nombreCasa = casaRows.length ? casaRows[0].nombre : 'Sin casa comercial';
+    // 4) Registrar auditoría antes de eliminar
+    await registrarAuditoria('kardex', id_kardex, 'eliminó', req.usuario);
 
+    // 5) Eliminar registro del kardex
+    await pool.query('DELETE FROM kardex WHERE id_kardex = ? AND id_sede = ?', [id_kardex, id_sede]);
 
-// ✅ Registrar auditoría con acción simple ("eliminó")
-await registrarAuditoria(
-  'kardex',
-  id_kardex,
-  'eliminó',
-  req.usuario
-);
-
-
-// 5) Eliminar registro del kardex
-await pool.query('DELETE FROM kardex WHERE id_kardex = ? AND id_sede = ?', [id_kardex, id_sede]);
-
-
-res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
+    res.status(202).json({ success: true, message: 'Registro eliminado y stock ajustado correctamente.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -792,6 +810,5 @@ res.status(202).json({ success: true, message: 'Registro eliminado y stock ajust
     });
   }
 });
-
 module.exports = router;
 

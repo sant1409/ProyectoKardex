@@ -1,3 +1,8 @@
+// Rutas para gestionar auditorías del sistema.
+// Permite crear, listar y eliminar registros de auditoría por sede.
+// Requiere autenticación con token para todas las operaciones.
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

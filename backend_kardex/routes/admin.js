@@ -1,3 +1,7 @@
+// Ruta que valida una clave maestra para activar el modo administrador.
+// Requiere autenticación por token y devuelve si el acceso es permitido junto con el id de la sede.
+
+
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../middlewares/auth');

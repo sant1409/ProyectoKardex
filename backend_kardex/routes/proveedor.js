@@ -1,3 +1,12 @@
+/**
+ * 🔹 proveedor.routes.js
+ * Este módulo maneja las rutas CRUD de la tabla proveedor.
+ * Permite crear, listar, actualizar y eliminar proveedores,
+ * asegurando que cada acción solo afecte registros asociados,
+   este es de insumos
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

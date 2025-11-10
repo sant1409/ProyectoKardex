@@ -1,3 +1,8 @@
+// Rutas para gestionar los links del sistema.
+// Permite crear, consultar, actualizar y eliminar enlaces almacenados en la base de datos.
+// No requiere autenticación; usa conexión directa a MySQL.
+
+
 const express = require("express");
 const router = express.Router();
 const pool = require("../db"); // tu conexión MySQL directa

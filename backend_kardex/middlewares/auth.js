@@ -1,3 +1,11 @@
+/**
+ * 🛡️ auth.js
+ * Middleware de autenticación con JWT.
+ * Comprueba la validez del token en el encabezado Authorization
+ * y permite el acceso a rutas protegidas agregando la información del usuario a req.
+ */
+
+
 const jwt = require('jsonwebtoken');
 const claveSecreta = process.env.JWT_SECRET || '123456789santiago';
 

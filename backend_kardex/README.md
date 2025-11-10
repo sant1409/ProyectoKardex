@@ -4,7 +4,7 @@
 ## carpetas para el proyecto
 ```
 backend_kardex  = JavaScript - express - node.js - sequelize
-frontend_kardex = React + vite + html + css
+frontend_kardex = React + vite + css
 ```
 ## Comandos del sistema - backend
 ```
@@ -18,7 +18,6 @@ npm install bcrypt = Sirve para encriptar contraseñas en la base de datos
 npm install cors = permite bloquear peticiones de otros dominios. ej: backend está en localhost:3000 y frontend en localhost:5173, con cors permites que se comuniquen.
 npm install dotenv = Permite guardas variables en el archivo .env, donde van los datos de la base de datos
 npm install express = framework mas utilizado para crear servidores en Node.js
-npm install express-session = Permite manejar sesiones de usuarios en el backend
 npm install mysql2 = Es el conector de Node.js para MYSQL, permitiendo hacer consultas mysql desde mi codigo
 npm install sequelize = Es una ORM , que permite interactuar con la base de datos. Ej: crear migraciones
 npm install --save-dev sequelize-cli = Es la herramienta de línea de comandos para trabajar con Sequelize.

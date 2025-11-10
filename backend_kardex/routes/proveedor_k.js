@@ -1,3 +1,12 @@
+/**
+ * 🔹 proveedor_k.routes.js
+ * Este módulo maneja las rutas CRUD de la tabla proveedor_k.
+ * Permite crear, listar, actualizar y eliminar proveedores,
+ * asegurando que cada acción solo afecte registros asociados,
+   este es de kardex(reactivos)
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

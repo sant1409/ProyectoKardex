@@ -1,3 +1,8 @@
+// Rutas para gestionar las clasificaciones del sistema.
+// Permite crear, actualizar, consultar y eliminar clasificaciones por sede.
+// Todas las operaciones requieren autenticación mediante token.
+//Esta es la clasificacion de insumos
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

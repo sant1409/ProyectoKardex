@@ -1,3 +1,8 @@
+// Ruta para obtener el inventario completo filtrado por sede.
+// Combina datos de reactivos e insumos, permitiendo filtrar por tipo, nombre o mes.
+// Requiere autenticación mediante token para acceder.
+
+
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
@@ -12,32 +17,36 @@ router.get("/", verificarToken, async (req, res) => {
     // --- CONSULTA KARDEX (REACTIVOS) ---
     let queryKardex = `
       SELECT 
-        k.id_nombre_insumo AS id,
+        k.id_kardex AS id,
         n.nombre AS nombre,
         k.fecha_recepcion,
         k.fecha_vencimiento,
-        k.cantidad AS cantidad,
+        s.cantidad_actual AS cantidad,   -- ✅ cantidad real 
         k.fecha_terminacion AS fecha_terminacion,
         'REACTIVO' AS tipo
       FROM kardex k
       JOIN nombre_insumo n ON k.id_nombre_insumo = n.id_nombre_insumo
+      LEFT JOIN stock_inventario s ON s.id_kardex = k.id_kardex AND s.id_sede = k.id_sede
       WHERE k.id_sede = ?
     `;
 
     // --- CONSULTA INSUMOS ---
+  
     let queryInsumos = `
       SELECT 
-        i.id_nombre_del_insumo AS id,
+        i.id_insumo AS id,
         n.nombre AS nombre,
         i.fecha AS fecha,
         i.fecha_de_vto AS fecha_de_vto,
-        i.cantidad AS cantidad,
+        s.cantidad_actual AS cantidad,   -- ✅ cantidad real
         i.termino AS termino,
-        'INSUMO' AS tipo
-      FROM insumos i
-      JOIN nombre_del_insumo n ON i.id_nombre_del_insumo = n.id_nombre_del_insumo
-      WHERE i.id_sede = ?
+       'INSUMO' AS tipo
+     FROM insumos i
+     JOIN nombre_del_insumo n ON i.id_nombre_del_insumo = n.id_nombre_del_insumo
+     LEFT JOIN stock_inventario s ON s.id_insumo = i.id_insumo AND s.id_sede = i.id_sede
+     WHERE i.id_sede = ?
     `;
+
 
     const paramsKardex = [id_sede];
     const paramsInsumos = [id_sede];
@@ -73,4 +82,7 @@ router.get("/", verificarToken, async (req, res) => {
   }
 });
 
-module.exports= router;
+module.exports = router;
+
+
+

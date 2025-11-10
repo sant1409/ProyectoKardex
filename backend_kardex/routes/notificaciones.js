@@ -1,3 +1,11 @@
+/**
+ * Rutas para la gestión de notificaciones del sistema.
+ * Permite listar, crear y marcar como leídas las notificaciones, 
+ * mostrando información relacionada con kardex, insumos y laboratorios. 
+ * Todas las operaciones están filtradas por la sede del usuario autenticado.
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

@@ -1,3 +1,9 @@
+// Rutas para gestionar las clasificaciones de riesgo del sistema.
+// Permite crear, actualizar, consultar y eliminar clasificaciones por sede.
+// Todas las operaciones están protegidas con autenticación por token.
+//Esta es la clasificacion de reactivos
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

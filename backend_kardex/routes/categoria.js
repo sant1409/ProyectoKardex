@@ -1,3 +1,8 @@
+// Rutas para gestionar las categorías del sistema.
+// Permite crear, actualizar, consultar y eliminar categorías por sede.
+// Todas las operaciones requieren autenticación con token.
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');

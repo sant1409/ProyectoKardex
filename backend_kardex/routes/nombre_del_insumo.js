@@ -1,3 +1,8 @@
+// Rutas para gestionar los nombres de insumos del sistema.
+// Permite crear, actualizar, consultar y eliminar nombres de insumos por sede.
+// Todas las operaciones están protegidas mediante autenticación por token.
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
