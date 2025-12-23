@@ -47,6 +47,9 @@ npm install react-select
 npm install xlsx file-saver  = sirve para exportar a excel
 npm install @react-pdf/renderer = sirve para descargar pdf
 
+pm2 start server.js --name backend -para arrancar el backend con pm2 en el servidor que este desplegado
+
+
 ```
 ## Pasos para migrar el proyecto para un repositorio en git hub
 ```

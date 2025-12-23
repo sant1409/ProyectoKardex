@@ -65,7 +65,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="Dashboard-container"> 
+   <div className="dashboard-scope Dashboard-container">
+
+    
+
       <aside className="Dashboard">
         <h2>Menú</h2>
         <ul>

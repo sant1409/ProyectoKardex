@@ -23,13 +23,13 @@ module.exports = {
       },
 
       verificado: {
-      type: Sequelize.BOOLEAN,
-      defaultValue: false
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
 
       },
       codigo_verificacion: {
-      type: Sequelize.STRING,
-      allowNull: true
+        type: Sequelize.STRING,
+        allowNull: true
       },
 
       codigo_recuperacion: {
@@ -38,8 +38,8 @@ module.exports = {
 
       },
 
-       id_sede: {
-        type:Sequelize.INTEGER,
+      id_sede: {
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'sede',
@@ -63,7 +63,7 @@ module.exports = {
     });
   },
 
-  
+
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('usuarios');
   }

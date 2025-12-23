@@ -12,8 +12,8 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-            id_sede: {
-        type:Sequelize.INTEGER,
+      id_sede: {
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'sede',

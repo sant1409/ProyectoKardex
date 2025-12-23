@@ -1,6 +1,5 @@
-  
-'use strict';
 
+'use strict';
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -83,7 +82,6 @@ module.exports = {
         onDelete: 'SET NULL'
       },
 
-
       principio_activo: { type: Sequelize.STRING, allowNull: true },
       forma_farmaceutica: { type: Sequelize.STRING, allowNull: true },
       concentracion: { type: Sequelize.STRING, allowNull: true },
@@ -93,6 +91,7 @@ module.exports = {
       fecha_terminacion: { type: Sequelize.STRING, allowNull: true },
       area: { type: Sequelize.STRING, allowNull: true },
       factura: { type: Sequelize.STRING, allowNull: true },
+      pagado: {type: Sequelize.BOOLEAN, allowNull: false,defaultValue: false},
       costo_general: { type: Sequelize.DECIMAL, allowNull: true },
       costo_caja: { type: Sequelize.DECIMAL, allowNull: true },
       costo_prueba: { type: Sequelize.DECIMAL, allowNull: true },
@@ -104,13 +103,11 @@ module.exports = {
         validate: {
           is: /^\d{4}-(0[1-9]|1[0-2])$/
         }
-        
       },
        lab_sas: {
        type: Sequelize.ENUM('lab', 'sas'),
        allowNull: false
       },
-
 
         usuarioId: {
         type: Sequelize.INTEGER,

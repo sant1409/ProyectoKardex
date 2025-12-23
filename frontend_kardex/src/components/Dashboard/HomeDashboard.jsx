@@ -33,7 +33,7 @@ export default function HomeDashboard() {
           <div className={`media-overlay ${!mostrarMedia ? "hidden" : ""}`}>
             <video
               className="dashboard-video"
-              src="/visual/Sistema de kardex.mp4"
+              src="/visual/Sistema de kardex funcionamiento.mp4"
               controls
               width="300"
             ></video>
@@ -49,7 +49,7 @@ export default function HomeDashboard() {
               download="Manual del Sistema de Kardex.pdf"
               className="pdf-download"
             >
-             ⬇️ Descargar manual
+              ⬇️ Descargar manual
             </a>
           </div>
 

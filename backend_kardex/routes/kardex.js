@@ -153,6 +153,15 @@ router.post('/', verificarToken, async (req, res) => {
       return res.status(400).json({ error: "La cantidad es obligatoria para que el stock pueda funcionar correctamente" });
     }
 
+    // Normalizar factura al inicio de la ruta (POST, PUT, etc.)
+    const facturaLimpia = typeof factura === "string" ? factura.trim() : factura;
+
+    // Validar que no esté vacía
+    if (!facturaLimpia) {
+      return res.status(400).json({ error: "El número de la factura es obligatorio para registrar el kardex" });
+    }
+
+
     //  Validar o crear FK con sede
     const idNombreInsumo = await obtenerOcrearFK(pool, 'nombre_insumo', 'nombre_insumo', id_nombre_insumo, id_sede);
     const idPresentacion = await obtenerOcrearFK(pool, 'presentacion_k', 'presentacion_k', id_presentacion_k, id_sede);
@@ -181,7 +190,7 @@ router.post('/', verificarToken, async (req, res) => {
         fecha_recepcion, temperatura_llegada, maximo, minimo, cantidad, salida, saldo, idNombreInsumo,
         idPresentacion, idCasacomercial, idProveedor, lote, fecha_vencimiento, registro_invima, expediente_invima,
         estado_revision, temperatura_almacenamiento, idClasificacionRiesgo, principio_activo, forma_farmaceutica,
-        concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, factura,
+        concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, facturaLimpia,
         costo_general, costo_caja, costo_prueba, iva, consumible, mes_registro, lab_sas, usuarioId, id_sede
       ]
     );
@@ -225,7 +234,7 @@ router.post('/', verificarToken, async (req, res) => {
 
 // Buscar kardex (con joins completos y filtros por sede)
 router.get('/buscar_kardex', verificarToken, async (req, res) => {
-  const { q, nombre, casa_comercial, lote, desde, hasta } = req.query;
+  const { q, nombre, casa_comercial, factura, lote, desde, hasta } = req.query;
   const id_sede = req.usuario.id_sede;
 
   if (!id_sede) {
@@ -238,8 +247,8 @@ router.get('/buscar_kardex', verificarToken, async (req, res) => {
   // Buscador único (q)
   if (q && q.trim() !== '') {
     const like = `%${q.trim()}%`;
-    condiciones.push("(ni.nombre LIKE ? OR cc.nombre LIKE ? OR k.lote LIKE ?)");
-    valores.push(like, like, like);
+    condiciones.push("(ni.nombre LIKE ? OR cc.nombre LIKE ? OR k.factura LIKE ? OR k.lote LIKE ?)");
+    valores.push(like, like, like, like);
   }
 
   // Filtros opcionales
@@ -251,6 +260,11 @@ router.get('/buscar_kardex', verificarToken, async (req, res) => {
   if (casa_comercial) {
     condiciones.push("cc.nombre LIKE ?");
     valores.push(`%${casa_comercial}%`);
+  }
+
+  if (factura) {
+    condiciones.push("k.factura LIKE ?");
+    valores.push(`%${factura}%`);
   }
 
   if (lote) {
@@ -301,6 +315,7 @@ router.get('/buscar_kardex', verificarToken, async (req, res) => {
       k.fecha_terminacion,
       k.area,
       k.factura,
+      k.pagado,
       k.costo_general,
       k.costo_caja,
       k.costo_prueba,
@@ -372,6 +387,14 @@ router.put('/:id_kardex', verificarToken, async (req, res) => {
     return res.status(400).json({ error: "El nombre del reactivo es obligatorio" });
   }
 
+  // Normalizar factura igual que en POST
+  const facturaLimpia = typeof factura === "string" ? factura.trim() : factura;
+
+  // Validar factura
+  if (!facturaLimpia) {
+    return res.status(400).json({ error: "El número de la factura es obligatorio" });
+  }
+
   const fkFields = {
     id_nombre_insumo: emptyToNull(id_nombre_insumo),
     id_presentacion_k: emptyToNull(id_presentacion_k),
@@ -414,7 +437,7 @@ router.put('/:id_kardex', verificarToken, async (req, res) => {
         fecha_recepcion, temperatura_llegada, maximo, minimo, cantidadFinal, salida, saldo, fkFields.id_nombre_insumo,
         fkFields.id_presentacion_k, fkFields.id_casa_comercial, fkFields.id_proveedor_k, lote, fecha_vencimiento, registro_invima, expediente_invima,
         estado_revision, temperatura_almacenamiento, fkFields.id_clasificacion_riesgo, principio_activo, forma_farmaceutica,
-        concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, factura,
+        concentracion, unidad_medida, fecha_salida, fecha_inicio, fecha_terminacion, area, facturaLimpia,
         costo_general, costo_caja, costo_prueba, iva, consumible, mes_registro, lab_sas, usuarioId, id_kardex, id_sede
       ]
     );
@@ -550,6 +573,37 @@ router.put('/:id_kardex', verificarToken, async (req, res) => {
   }
 });
 
+// ✅ Actualizar estado de pago por factura (por sede)
+router.put('/pagado/:factura', verificarToken, async (req, res) => {
+  try {
+    const { factura } = req.params;
+    const { pagado } = req.body;
+    const id_sede = req.usuario.id_sede;
+
+    // Validar que pagado sea 0 o 1
+    if (pagado !== 0 && pagado !== 1 && pagado !== true && pagado !== false) {
+      return res.status(400).json({ error: 'El campo pagado debe ser 0 o 1.' });
+    }
+    // Convertir true/false a 1/0 por si te llega booleano
+    const pagadoValue = pagado ? 1 : 0;
+
+    // UPDATE por factura y sede
+    const [result] = await pool.query(
+      `UPDATE kardex SET pagado = ? WHERE factura = ? AND id_sede = ?`,
+
+      [pagadoValue, factura, id_sede]
+    );
+
+    res.json({
+      message: 'Estado de pago actualizado correctamente.',
+      registrosAfectados: result.affectedRows
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 //Buscar kardex por id
 router.get('/:id_kardex', verificarToken, async (req, res) => {
@@ -568,7 +622,7 @@ router.get('/:id_kardex', verificarToken, async (req, res) => {
         k.cantidad,
         k.salida,
         k.saldo,
-
+        
         -- Nombres en lugar de IDs
         ni.nombre  AS nombre_insumo,
         pk.nombre  AS presentacion,
@@ -591,6 +645,7 @@ router.get('/:id_kardex', verificarToken, async (req, res) => {
         k.fecha_terminacion,
         k.area,
         k.factura,
+        k.pagado,
         k.costo_general,
         k.costo_caja,
         k.costo_prueba,
@@ -676,6 +731,7 @@ router.get('/', verificarToken, async (req, res) => {
         k.fecha_terminacion,
         k.area,
         k.factura,
+        k.pagado,
         k.costo_general,
         k.costo_caja,
         k.costo_prueba,
@@ -713,6 +769,7 @@ router.get('/', verificarToken, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Eliminar un registro del kardex
 router.delete('/:id_kardex', verificarToken, async (req, res) => {

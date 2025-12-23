@@ -47,7 +47,7 @@ router.get('/', verificarToken, async (req, res) => {
 // 🧹 Limpiar auditorías antiguas o todas (por sede)
 router.delete('/limpiar', verificarToken, async (req, res) => {
   try {
-    const { opcion } = req.body; 
+    const { opcion } = req.body;
     const id_sede = req.usuario.id_sede; // ✅ Se usa para filtrar por sede
 
     let query = '';

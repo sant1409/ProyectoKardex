@@ -57,7 +57,7 @@ export default function IniciarSesionForm() {
         if (perfilRes.ok) {
           localStorage.setItem("usuario", JSON.stringify(perfil.usuario));
           localStorage.setItem("id_sede", perfil.usuario.id_sede);
-       
+
         }
 
         // Redirigir al dashboard
@@ -140,6 +140,36 @@ export default function IniciarSesionForm() {
     }
   };
 
+  const reenviarCodigo = async () => {
+    if (!correo) {
+      setMensaje("Debe ingresar el correo primero");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/usuarios/recuperar_clave", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMensaje("Nuevo código enviado nuevamente al correo 📩");
+      } else {
+        setMensaje(data.error || "Error al reenviar código");
+      }
+
+    } catch (error) {
+      console.error(error);
+      setMensaje("Error al conectar al servidor");
+    }
+  };
+
+
+
+
   return (
     <div>
       {paso === "iniciar_sesion" && (
@@ -198,11 +228,19 @@ export default function IniciarSesionForm() {
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
             />
+
             {mensaje && <p className="mensaje">{mensaje}</p>}
+
             <button type="submit">Verificar</button>
+
+            <p style={{ marginTop: "10px", cursor: "pointer", color: "#000000" }}
+              onClick={reenviarCodigo}>
+              ¿No te llegó el código? Reenviar
+            </p>
           </form>
         </div>
       )}
+
 
       {paso === "nuevaclave" && (
         <div className="iniciarsesion-container">

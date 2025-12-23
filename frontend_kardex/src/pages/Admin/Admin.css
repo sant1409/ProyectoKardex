@@ -30,38 +30,46 @@
   letter-spacing: 0.5px;
 }
 
+/* === INPUTS estilo Dashboard con BORDE CELESTE === */
 .admin-form input {
   width: 100%;
   padding: 12px 14px;
   margin-bottom: 20px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #9edffc; /* celeste suave */
   border-radius: 10px;
   font-size: 15px;
-  transition: border 0.2s ease;
+  transition: border 0.2s ease, box-shadow 0.25s ease;
 }
 
 .admin-form input:focus {
-  border-color: #2563eb;
+  border-color: #38bdf8; /* celeste brillante */
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.65);
 }
 
+/* === Botón de login estilo Dashboard === */
 .admin-form button {
-  background: #080808;
-  color: white;
+  background: var(--color-secondary-bg);
+  color: var(--color-text-light);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
   font-size: 15px;
   cursor: pointer;
   width: 100%;
   font-weight: 600;
-  transition: background 0.3s ease, transform 0.2s;
+
+  box-shadow: 2px 2px 6px var(--shadow-light),
+              -2px -2px 6px var(--shadow-dark);
+
+  transition: all 0.25s ease;
 }
 
 .admin-form button:hover {
-  transform: translateY(-1px);
-  background: #0f72ce; 
+  transform: translateY(-2px);
+  color: var(--color-accent);
+  box-shadow: 2px 2px 8px var(--shadow-light),
+              -2px -2px 8px var(--shadow-dark);
 }
 
 .mensaje {
@@ -79,7 +87,6 @@
 
 /* === Panel administrador === */
 .panel-admin {
-  
   padding: 35px 40px;
   background: #ffffff;
   border-radius: 20px;
@@ -93,7 +100,7 @@
 
 .panel-admin h1 {
   text-align: center;
-  color: #000000 ;
+  color: #000000;
   margin-bottom: 40px;
   font-weight: 600;
 }
@@ -112,42 +119,53 @@
   margin-bottom: 10px;
 }
 
+/* === INPUTS CELESTES en el formulario === */
 .formulario input {
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #9edffc; /* celestico */
   font-size: 15px;
-  transition: 0.2s;
+  transition: 0.25s;
 }
 
 .formulario input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #38bdf8;
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.45);
 }
 
+/* === Botón guardar estilo Dashboard === */
 .formulario button {
-  background: #080808;
-  color: white;
+  background: var(--color-secondary-bg);
+  color: var(--color-text-light);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  transition: all 0.3s ease;
+
+  box-shadow: 2px 2px 6px var(--shadow-light),
+              -2px -2px 6px var(--shadow-dark);
+
+  transition: all 0.25s ease;
 }
 
 .formulario button:hover {
-  background: #0f72ce;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  color: var(--color-accent);
+  box-shadow: 2px 2px 8px var(--shadow-light),
+              -2px -2px 8px var(--shadow-dark);
 }
 
+/* === Botón cancelar === */
 .formulario .cancelar {
-  background: #9ca3af;
+  background: #777;
+  color: white;
 }
 
 .formulario .cancelar:hover {
-  background: #6b7280;
+  background: #555;
+  color: #d6eaff;
 }
 
 /* === Lista de categorías === */
@@ -179,57 +197,8 @@
   color: #1f2937;
 }
 
-/* === Botones de acción === */
-.lista li div {
-  display: flex;
-  gap: 12px;
-}
 
-.lista li button {
-  background: #f3f4f6;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 6px 9px;
-  border-radius: 8px;
-  transition: all 0.25s ease;
-}
-
-.lista li button:hover {
-  transform: scale(1.15);
-}
-
-.lista li button:first-child {
-  color: #2563eb;
-}
-
-.lista li button.eliminar {
-  color: #dc2626;
-}
-
-.lista li button:first-child:hover {
-  background: rgba(37, 99, 235, 0.1);
-}
-
-.lista li button.eliminar:hover {
-  background: rgba(220, 38, 38, 0.1);
-}
-
-/* === Scrollbar personalizada === */
-.panel-admin::-webkit-scrollbar {
-  width: 8px;
-}
-
-.panel-admin::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.panel-admin::-webkit-scrollbar-thumb {
-  background: #2563eb;
-  border-radius: 10px;
-}
-
-
+/* === Bloque limpieza === */
 .bloque-limpieza {
   margin-top: 30px;
   padding: 20px;
@@ -253,21 +222,33 @@
   margin-top: 10px;
   width: 100%;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #9edffc; /* celeste */
 }
 
+.bloque-limpieza select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.45);
+}
+
+/* === Botón limpiar estilo Dashboard === */
 .btn-limpiar {
   margin-top: 15px;
-  background-color: #080808;
-  color: white;
+  background: var(--color-secondary-bg);
+  color: var(--color-text-light);
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 10px 15px;
   cursor: pointer;
-  transition: background 0.3s;
+
+  box-shadow: 2px 2px 6px var(--shadow-light),
+              -2px -2px 6px var(--shadow-dark);
+
+  transition: all 0.25s ease;
 }
 
 .btn-limpiar:hover {
-  background-color: #0f72ce;
+  transform: translateY(-2px);
+  color: var(--color-accent);
+  box-shadow: 2px 2px 8px var(--shadow-light),
+              -2px -2px 8px var(--shadow-dark);
 }
-

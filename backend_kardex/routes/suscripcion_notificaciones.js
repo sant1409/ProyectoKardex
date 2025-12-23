@@ -9,13 +9,13 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
-const { verificarToken } = require('../middlewares/auth'); 
+const { verificarToken } = require('../middlewares/auth');
 
 // 🔹 Obtener todas las suscripciones (opcionalmente filtradas por sede)
 router.get('/', verificarToken, async (req, res) => {
   try {
-   const id_sede = req.usuario.id_sede;
-   
+    const id_sede = req.usuario.id_sede;
+
     let query = 'SELECT * FROM suscripcion_notificaciones';
     let params = [];
 
@@ -36,7 +36,7 @@ router.get('/', verificarToken, async (req, res) => {
 router.post('/', verificarToken, async (req, res) => {
   try {
     const { correo } = req.body;
-       const id_sede = req.usuario.id_sede;
+    const id_sede = req.usuario.id_sede;
     if (!correo || !id_sede) {
       return res.status(400).json({ error: 'Faltan datos obligatorios: correo o id_sede' });
     }
@@ -57,7 +57,7 @@ router.post('/', verificarToken, async (req, res) => {
 router.delete('/:id', verificarToken, async (req, res) => {
   try {
     const { id } = req.params;
-      const id_sede = req.usuario.id_sede;
+    const id_sede = req.usuario.id_sede;
     const [result] = await pool.query(
       'DELETE FROM suscripcion_notificaciones WHERE id_suscripcion_notificaciones = ? AND id_sede = ?',
       [id, id_sede]

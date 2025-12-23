@@ -23,5 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 
-echo "frontend_kardex/public/visual/Sistema de kardex.mp4" >> .gitignore
 

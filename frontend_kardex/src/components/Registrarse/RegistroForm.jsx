@@ -32,12 +32,12 @@ export default function Registro() {
   const [sedes, setSedes] = useState([]);
   const token = localStorage.getItem("token");
 
-    useEffect(() => {
+  useEffect(() => {
     fetch("http://localhost:3000/sede")
       .then(res => res.json())
       .then(data => setSedes(data))
       .catch(err => console.error(err));
-      
+
   }, []);
 
   const handleSubmitRegistro = async (e) => {
@@ -56,7 +56,7 @@ export default function Registro() {
     try {
       const res = await fetch("http://localhost:3000/usuarios/registrarse", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo, nombre, contraseña, id_sede }),
       });
 
@@ -78,8 +78,8 @@ export default function Registro() {
     try {
       const res = await fetch("http://localhost:3000/usuarios/verificar", {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({ correo, codigo}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo, codigo }),
       });
 
       const data = await res.json();
@@ -97,33 +97,33 @@ export default function Registro() {
 
   return (
     <div>
-       
+
 
       {paso === "registro" && (
-       
-        <div className="registrarse-container">
-        <form className="registro-form" onSubmit={handleSubmitRegistro}>
-          <h2>Registro de usuario</h2>
-          <input
-            type="email"
-            placeholder="Correo"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={contraseña}
-            onChange={(e) => setContraseña(e.target.value)}
-          />
 
-           <select value={id_sede} onChange={e => setId_sede(e.target.value)}>
+        <div className="registrarse-container">
+          <form className="registro-form" onSubmit={handleSubmitRegistro}>
+            <h2>Registro de usuario</h2>
+            <input
+              type="email"
+              placeholder="Correo"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+            />
+
+            <select value={id_sede} onChange={e => setId_sede(e.target.value)}>
               <option value="">Selecciona tu sede</option>
               {sedes.map(sede => (
                 <option key={sede.id_sede} value={sede.id_sede}>
@@ -132,43 +132,43 @@ export default function Registro() {
               ))}
             </select>
 
-          {mensaje && <p className="mensaje">{mensaje}</p>}
-          <button type="submit">Registrarse</button>
-        </form>
+            {mensaje && <p className="mensaje">{mensaje}</p>}
+            <button type="submit">Registrarse</button>
+          </form>
         </div>
-        
-        
+
+
       )}
-      
+
 
       {paso === "verificar" && (
-         
-            <div className="registrarse-container">
-        <form className="registro-form" onSubmit={handleSubmitVerificacion}>
-              <h2>Verificar correo</h2>
-          <input
-            type="text"
-            placeholder="Código de verificación"
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-          />
-          {mensaje && <p className="mensaje">{mensaje}</p>}
-          <button type="submit">Verificar</button>
-        </form>
-        </div>
-        
-        
-      )}
-  
 
-    {paso === "verificado" && (
-      <div className="registro-form">
-     
+        <div className="registrarse-container">
+          <form className="registro-form" onSubmit={handleSubmitVerificacion}>
+            <h2>Verificar correo</h2>
+            <input
+              type="text"
+              placeholder="Código de verificación"
+              value={codigo}
+              onChange={(e) => setCodigo(e.target.value)}
+            />
+            {mensaje && <p className="mensaje">{mensaje}</p>}
+            <button type="submit">Verificar</button>
+          </form>
+        </div>
+
+
+      )}
+
+
+      {paso === "verificado" && (
+        <div className="registro-form">
+
           <p>¡Registro completo!</p>
         </div>
-      
-    )}
-  </div>
-);
+
+      )}
+    </div>
+  );
 
 }

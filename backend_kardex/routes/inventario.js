@@ -31,7 +31,7 @@ router.get("/", verificarToken, async (req, res) => {
     `;
 
     // --- CONSULTA INSUMOS ---
-  
+
     let queryInsumos = `
       SELECT 
         i.id_insumo AS id,

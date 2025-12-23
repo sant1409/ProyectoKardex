@@ -24,6 +24,8 @@
 
 const pool = require('../db');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
+
 
 // 🔹 Función global para obtener fecha local en formato YYYY-MM-DD
 function fechaLocalYYYYMMDD(fecha) {
@@ -206,7 +208,8 @@ const [insumosSalidas] = await pool.query(`
   LEFT JOIN nombre_del_insumo ndi ON i.id_nombre_del_insumo = ndi.id_nombre_del_insumo
   LEFT JOIN laboratorio l ON i.id_laboratorio = l.id_laboratorio
   WHERE i.termino IS NOT NULL 
-    AND i.termino <> '0000-00-00 00:00:00'
+
+
     AND i.id_sede = ?
 `, [id_sede]);
 
@@ -255,17 +258,26 @@ async function enviarNotificacionesPorCorreo(id_sede) {
 
   const destinatarios = suscriptores.map(s => s.correo);
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { 
-      user: 'automatizarkardex@gmail.com', 
-      pass: 'dnnv qksc ddma fkgm'
-    }
-  });
+
+
+const transporte = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// Verifica que el correo esté listo
+transporte.verify()
+  .then(() => console.log("📩 SMTP Notificaciones listo ✔️"))
+  .catch(err => console.error("❌ Error SMTP (Notificaciones):", err.message));
 
   for (const n of notis) {
-    await transporter.sendMail({
-      from: '"Kardex Sistema" <automatizarkardex@gmail.com>',
+    await transporte.sendMail({
+
+      from: `"Kardex Sistema" <${process.env.EMAIL_USER}>`,
+
       to: destinatarios.join(','),
       subject: 'Notificación del Sistema Kardex',
       text: n.mensaje

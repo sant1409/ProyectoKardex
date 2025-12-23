@@ -177,7 +177,7 @@ export default function Links() {
                       </>
                     ) : (
                       <>
-                        <button onClick={() => setEditando(l.id_link)}>
+                        <button  onClick={() => setEditando(l.id_link)}>
                           ✏️
                         </button>
                         <button onClick={() => eliminarLink(l.id_link)}>

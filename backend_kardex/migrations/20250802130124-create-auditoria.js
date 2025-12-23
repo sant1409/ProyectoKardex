@@ -21,8 +21,8 @@ module.exports = {
         allowNull: false,
       },
 
-      accion:{
-        type:Sequelize.STRING,
+      accion: {
+        type: Sequelize.STRING,
         allowNull: false,
       },
 
@@ -33,8 +33,8 @@ module.exports = {
       },
 
       detalle_adicional: {
-      type: Sequelize.TEXT,
-      allowNull: true
+        type: Sequelize.TEXT,
+        allowNull: true
       },
 
       id_usuario: {
@@ -52,9 +52,9 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-      
-        id_sede: {
-        type:Sequelize.INTEGER,
+
+      id_sede: {
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: {
           model: 'sede',

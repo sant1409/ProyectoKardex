@@ -83,7 +83,7 @@ router.get('/', verificarToken, async (req, res) => {
 
     const [rows] = await pool.query(
       'SELECT id_presentacion_k, nombre AS presentacion_k FROM presentacion_k WHERE id_sede = ?',
-     
+
 
       [id_sede]
     );

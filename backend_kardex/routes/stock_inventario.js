@@ -26,7 +26,7 @@ function toYMD(v) {
 async function procesarFechasTerminacion(id_sede) {
   console.log('⏰ Cron procesando insumos y kardex...');
   try {
-    const hoy = toYMD(new Date()); 
+    const hoy = toYMD(new Date());
 
     let eliminadosInsumos = 0;
     let eliminadosKardex = 0;
@@ -163,15 +163,15 @@ async function procesarFechasTerminacion(id_sede) {
 
 // GET todo el stock, separado por Insumos y Reactivos
 
-router.get("/",verificarToken, async (req, res) => {
+router.get("/", verificarToken, async (req, res) => {
   try {
     const { tipo, nombre, laboratorio, casaComercial } = req.query;
-        const id_sede = req.usuario.id_sede; // sede de la sesión
+    const id_sede = req.usuario.id_sede; // sede de la sesión
     if (!id_sede) return res.status(400).json({ error: 'No hay sede seleccionada' });
 
     // Parámetros y condiciones por tipo
     let whereInsumos = "s.id_insumo IS NOT NULL AND s.id_sede = ?";
-    
+
     let paramsInsumos = [id_sede];
 
     let whereReactivos = "s.id_kardex IS NOT NULL AND s.id_sede = ?";
@@ -200,9 +200,9 @@ router.get("/",verificarToken, async (req, res) => {
     let reactivos = [];
 
     // Obtener insumos
-if (!tipo || tipo === "INSUMO") {
-  const [rows] = await pool.query(
-    `
+    if (!tipo || tipo === "INSUMO") {
+      const [rows] = await pool.query(
+        `
     SELECT 
       s.nombre_producto,
       s.id_sede,
@@ -213,16 +213,16 @@ if (!tipo || tipo === "INSUMO") {
     WHERE ${whereInsumos}
     GROUP BY s.nombre_producto, l.nombre
     `,
-     paramsInsumos
-  );
+        paramsInsumos
+      );
       insumos = rows; // ✅ asignado
     }
 
 
-// Obtener reactivos
-if (!tipo || tipo === "REACTIVO") {
-  const [rows] = await pool.query(
-    `
+    // Obtener reactivos
+    if (!tipo || tipo === "REACTIVO") {
+      const [rows] = await pool.query(
+        `
     SELECT 
       s.nombre_producto,
       s.id_sede,
@@ -233,11 +233,11 @@ if (!tipo || tipo === "REACTIVO") {
     WHERE ${whereReactivos}
     GROUP BY s.nombre_producto, c.nombre
     `,
-      paramsReactivos
+        paramsReactivos
       );
       reactivos = rows; // ✅ asignado
     }
-  
+
     res.json({ insumos, reactivos });
   } catch (err) {
     console.error("Error en /stock_inventario:", err);
